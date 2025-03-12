@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "dev": "node server.js",  
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -11,6 +12,7 @@
   "description": "",
   "dependencies": {
     "@fastify/cors": "^11.0.0",
-    "fastify": "^5.2.1"
+    "fastify": "^5.2.1",
+    "nano": "^10.1.4"
   }
 }
