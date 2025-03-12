@@ -25,7 +25,7 @@ export default async function eventRoutes(fastify, options) {
       return reply.status(400).send({ error: "Event ID ist erforderlich!" });
     }
 
-    const result = await bookEvent(eventId);  // Verwendet die Funktion `bookEvent`
+    const result = await bookEvent(eventId);  // Verwendet die Funktion `bookEvent` 
     if (result.success) {
       return { message: "Buchung erfolgreich!", event: result.event };
     } else {
