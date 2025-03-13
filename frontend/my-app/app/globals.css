@@ -2,26 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #f3f4f6;
-  --foreground: #1f2937;
-  --primary: #2563eb;
-  --secondary: #dc2626;
-  --accent: #f59e0b;
-  --muted: #9ca3af;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #111827;
-    --foreground: #e5e7eb;
-    --muted: #6b7280;
-  }
-}
-
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: #111827;
+  color: #e5e7eb;
   font-family: 'Inter', sans-serif;
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
 }
@@ -37,7 +20,6 @@ h2 {
   font-size: 2rem;
   font-weight: 700;
   text-align: center;
-  color: var(--primary);
   margin-bottom: 1rem;
 }
 
@@ -77,18 +59,4 @@ button:hover {
 .card:hover {
   transform: scale(1.03);
   box-shadow: 0px 8px 14px rgba(0, 0, 0, 0.2);
-}
-
-.input {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid var(--muted);
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border 0.3s ease-in-out;
-}
-
-.input:focus {
-  border-color: var(--primary);
-  outline: none;
 }

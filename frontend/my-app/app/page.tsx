@@ -54,20 +54,20 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
-      <h1 className="text-5xl font-extrabold text-gray-900 mb-8">🎟️ Event Buchung</h1>
+    <div className="min-h-screen flex flex-col items-center bg-gray-900 text-white p-6">
+      <h1 className="text-5xl font-extrabold text-white mb-8 text-center">🎟️ Event Buchung</h1>
 
-      {loading && <p className="text-blue-600 text-lg">🔄 Daten werden geladen...</p>}
-      {error && <p className="text-red-600 text-lg">⚠️ Fehler: {error}</p>}
+      {loading && <p className="text-blue-400 text-lg">🔄 Daten werden geladen...</p>}
+      {error && <p className="text-red-400 text-lg">⚠️ Fehler: {error}</p>}
 
-      <form onSubmit={handleSubmit} className="w-full max-w-lg bg-white p-8 rounded-xl shadow-lg mb-8">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">➕ Neues Event</h2>
+      <form onSubmit={handleSubmit} className="w-full max-w-lg bg-gray-800 p-8 rounded-xl shadow-lg mb-8">
+        <h2 className="text-2xl font-semibold text-white mb-6 text-center">➕ Neues Event</h2>
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Event Titel"
-          className="w-full p-3 border border-gray-300 rounded-lg mb-4 shadow-sm focus:ring focus:ring-blue-300"
+          className="w-full p-3 border border-gray-600 rounded-lg mb-4 bg-gray-700 text-white shadow-sm focus:ring focus:ring-blue-300"
           required
         />
         <input
@@ -75,7 +75,7 @@ export default function Home() {
           value={availableSeats}
           onChange={(e) => setAvailableSeats(e.target.value)}
           placeholder="Verfügbare Plätze"
-          className="w-full p-3 border border-gray-300 rounded-lg mb-4 shadow-sm focus:ring focus:ring-blue-300"
+          className="w-full p-3 border border-gray-600 rounded-lg mb-4 bg-gray-700 text-white shadow-sm focus:ring focus:ring-blue-300"
           required
         />
         <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">
@@ -83,14 +83,14 @@ export default function Home() {
         </button>
       </form>
 
-      <div className="w-full max-w-5xl">
-        <h2 className="text-3xl font-semibold text-gray-800 mb-6">🎭 Verfügbare Events</h2>
+      <div className="w-full max-w-7xl">
+        <h2 className="text-3xl font-semibold text-white mb-6 text-center">🎭 Verfügbare Events</h2>
         {events.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 place-items-center">
             {events.map((event) => (
-              <div key={event._id} className="bg-white p-6 rounded-xl shadow-md">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{event.title}</h3>
-                <p className="text-gray-700">Verfügbare Plätze: {event.available_seats ?? "Nicht verfügbar"}</p>
+              <div key={event._id} className="bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center text-center w-64">
+                <h3 className="text-xl font-semibold text-white mb-2">{event.title}</h3>
+                <p className="text-gray-300">Verfügbare Plätze: {event.available_seats ?? "Nicht verfügbar"}</p>
                 <button
                   onClick={() => bookEvent(event._id)}
                   className="mt-4 w-full bg-green-500 text-white py-2 rounded-lg text-lg font-semibold hover:bg-green-600 transition"
@@ -101,7 +101,7 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-700 text-lg text-center">Keine Events verfügbar.</p>
+          <p className="text-gray-400 text-lg text-center">Keine Events verfügbar.</p>
         )}
       </div>
     </div>
