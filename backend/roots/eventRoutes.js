@@ -1,7 +1,8 @@
-const { getEvents, addEvent, bookEvent } = require("../core/eventStore.js");
+// roots/eventRoutes.js
+import { getEvents, addEvent, bookEvent } from "../core/eventStore.js"; // Verwenden von import für eventStore
 
-// 📌 GET: Alle Events abrufen
 const eventRoutes = async (fastify, options) => {
+  // 📌 GET: Alle Events abrufen
   fastify.get("/events", async (request, reply) => {
     try {
       const events = await getEvents();
@@ -11,6 +12,7 @@ const eventRoutes = async (fastify, options) => {
     }
   });
 
+  // 📌 POST: Event hinzufügen
   fastify.post("/events", async (request, reply) => {
     const eventData = request.body;
     const result = await addEvent(eventData);
@@ -21,6 +23,7 @@ const eventRoutes = async (fastify, options) => {
     }
   });
 
+  // 📌 POST: Event buchen
   fastify.post("/events/book", async (request, reply) => {
     const { eventId } = request.body;
     if (!eventId) {
@@ -36,5 +39,4 @@ const eventRoutes = async (fastify, options) => {
   });
 };
 
-// Exportiere die eventRoutes
-module.exports = eventRoutes;
+export default eventRoutes;

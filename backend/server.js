@@ -1,7 +1,7 @@
-// Verwenden von require für die Module
-const Fastify = require('fastify');
-const cors = require('@fastify/cors');
-const eventRoutes = require('./roots/eventRoutes.js'); // Importiere eventRoutes mit require
+// server.js
+import Fastify from 'fastify'; // Verwenden von import
+import cors from '@fastify/cors'; // Verwenden von import
+import eventRoutes from './roots/eventRoutes.js'; // Importiere die eventRoutes
 
 const fastify = Fastify({ logger: true });
 
