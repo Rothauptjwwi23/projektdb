@@ -1,40 +1,44 @@
-import { eventDB } from "./db.js";
+import nano from "nano";
 
-// 📌 Funktion zum Abrufen aller Events
-export const getEvents = async () => {
+const couchDBUrl = "http://admin:passwort1234@127.0.0.1:5984";
+const couch = nano(couchDBUrl);
+const eventDB = couch.use("events");
+
+async function initializeDatabases() {
   try {
-    const events = await eventDB.list({ include_docs: true });
-    return events.rows.length ? events.rows.map(row => row.doc) : [];
-  } catch (error) {
-    console.error("❌ Fehler beim Abrufen der Events:", error);
-    return [];
+    const dbs = await couch.db.list();
+    if (!dbs.includes("events")) {
+      await couch.db.create("events");
+      console.log(`✅ Datenbank "events" wurde erstellt.`);
+    }
+  } catch (err) {
+    console.error(`❌ Fehler: ${err.message}`);
   }
+}
+
+initializeDatabases();
+
+export const getEvents = async () => {
+  const response = await eventDB.list({ include_docs: true });
+  return response.rows.map(row => row.doc);
 };
 
-// 📌 Funktion zum Hinzufügen eines neuen Events
 export const addEvent = async (eventData) => {
   try {
     const response = await eventDB.insert(eventData);
-    return { success: true, id: response.id };
-  } catch (error) {
-    console.error("❌ Fehler beim Hinzufügen eines Events:", error);
-    return { success: false, error: error.message };
+    return response;
+  } catch (err) {
+    throw err;
   }
 };
 
-// 📌 Funktion zum Buchen eines Events
 export const bookEvent = async (eventId) => {
-  try {
-    const event = await eventDB.get(eventId);
-    if (event.booked < event.seats) {
-      event.booked += 1;
-      await eventDB.insert(event);
-      return { success: true, event };
-    } else {
-      return { success: false, message: "Keine freien Plätze mehr!" };
-    }
-  } catch (error) {
-    console.error("❌ Fehler beim Buchen:", error);
-    return { success: false, error: error.message };
+  const event = await eventDB.get(eventId);
+  if (event.booked < event.seats) {
+    event.booked += 1;
+    await eventDB.insert(event);
+    return { success: true };
+  } else {
+    return { success: false, error: "Keine freien Plätze mehr verfügbar!" };
   }
 };

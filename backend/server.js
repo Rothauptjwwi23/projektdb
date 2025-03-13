@@ -11,10 +11,7 @@ fastify.register(cors, {
   methods: ["GET", "POST"],
 });
 
-// **Route für den Root-Pfad hinzufügen**
-fastify.get("/", async (request, reply) => {
-  return { message: "Willkommen beim Event-Buchungssystem!" };
-});
+
 
 // **Route für Events registrieren**
 fastify.register(eventRoutes);

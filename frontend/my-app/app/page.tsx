@@ -1,14 +1,14 @@
 "use client";
+
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [events, setEvents] = useState<{ _id: string; name: string; value: number; seats: number; booked: number }[]>([]);
-  const [name, setName] = useState("");
-  const [value, setValue] = useState("");
+  const [events, setEvents] = useState<{ _id: string; title: string; available_seats: number }[]>([]);
+  const [title, setTitle] = useState("");
+  const [availableSeats, setAvailableSeats] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Abrufen der Events beim Laden der Seite
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -16,11 +16,9 @@ export default function Home() {
   const fetchEvents = async () => {
     try {
       const response = await fetch("http://127.0.0.1:3001/events");
-      if (!response.ok) {
-        throw new Error("Fehler beim Abrufen der Events");
-      }
+      if (!response.ok) throw new Error("Fehler beim Abrufen der Events");
       const data = await response.json();
-      setEvents(data.events); // Speichert die abgerufenen Events im State
+      setEvents(data.events);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Unbekannter Fehler");
     } finally {
@@ -30,11 +28,11 @@ export default function Home() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!name || !value) {
-      alert("Bitte Name und Wert eingeben.");
+    if (!title || !availableSeats) {
+      alert("Bitte Titel und Plätze eingeben.");
       return;
     }
-    const eventData = { name, value: Number(value), seats: 50, booked: 0 };
+    const eventData = { title, available_seats: Number(availableSeats) };
 
     try {
       const response = await fetch("http://127.0.0.1:3001/events", {
@@ -47,8 +45,8 @@ export default function Home() {
 
       const result = await response.json();
       setEvents((prevEvents) => [...prevEvents, { ...eventData, _id: result.id }]);
-      setName("");
-      setValue("");
+      setTitle("");
+      setAvailableSeats("");
       alert("Event erfolgreich hinzugefügt!");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Unbekannter Fehler");
@@ -56,61 +54,59 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50 text-gray-900">
-      <h1 className="text-4xl font-bold mb-6">📊 Backend-Daten</h1>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
+      <h1 className="text-5xl font-extrabold text-gray-900 mb-8">🎟️ Event Buchung</h1>
 
-      {loading && <p className="text-blue-600">🔄 Daten werden geladen...</p>}
-      {error && <p className="text-red-600">⚠️ Fehler: {error}</p>}
+      {loading && <p className="text-blue-600 text-lg">🔄 Daten werden geladen...</p>}
+      {error && <p className="text-red-600 text-lg">⚠️ Fehler: {error}</p>}
 
-      <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-4 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-semibold mb-4">➕ Neues Event hinzufügen</h2>
+      <form onSubmit={handleSubmit} className="w-full max-w-lg bg-white p-8 rounded-xl shadow-lg mb-8">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">➕ Neues Event</h2>
         <input
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Event Name"
-          className="w-full p-2 border rounded-lg mb-4"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Event Titel"
+          className="w-full p-3 border border-gray-300 rounded-lg mb-4 shadow-sm focus:ring focus:ring-blue-300"
           required
         />
         <input
           type="number"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="Wert"
-          className="w-full p-2 border rounded-lg mb-4"
+          value={availableSeats}
+          onChange={(e) => setAvailableSeats(e.target.value)}
+          placeholder="Verfügbare Plätze"
+          className="w-full p-3 border border-gray-300 rounded-lg mb-4 shadow-sm focus:ring focus:ring-blue-300"
           required
         />
-        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700">
+        <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">
           ➕ Hinzufügen
         </button>
       </form>
 
-      <div className="w-full max-w-4xl p-6 bg-white rounded-lg shadow-lg">
-        <h2 className="text-xl font-semibold mb-4">Verfügbare Events</h2>
+      <div className="w-full max-w-5xl">
+        <h2 className="text-3xl font-semibold text-gray-800 mb-6">🎭 Verfügbare Events</h2>
         {events.length > 0 ? (
-          <ul>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => (
-              <li key={event._id} className="p-4 border rounded-lg shadow-md mb-4">
-                <h3 className="text-lg font-semibold">{event.name}</h3>
-                <p>Wert: {event.value}</p>
-                <p>Verfügbar: {event.seats - event.booked}</p>
+              <div key={event._id} className="bg-white p-6 rounded-xl shadow-md">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{event.title}</h3>
+                <p className="text-gray-700">Verfügbare Plätze: {event.available_seats ?? "Nicht verfügbar"}</p>
                 <button
                   onClick={() => bookEvent(event._id)}
-                  className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600"
+                  className="mt-4 w-full bg-green-500 text-white py-2 rounded-lg text-lg font-semibold hover:bg-green-600 transition"
                 >
-                  Buchen
+                  🎟️ Buchen
                 </button>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
-          <p>Keine Events verfügbar.</p>
+          <p className="text-gray-700 text-lg text-center">Keine Events verfügbar.</p>
         )}
       </div>
     </div>
   );
 
-  // Buchungsfunktion für Events
   async function bookEvent(eventId: string) {
     try {
       const response = await fetch("http://127.0.0.1:3001/events/book", {
@@ -121,7 +117,7 @@ export default function Home() {
       const data = await response.json();
       if (data.message === "Buchung erfolgreich!") {
         alert("Buchung erfolgreich!");
-        fetchEvents(); // Nach der Buchung das Event neu laden
+        fetchEvents();
       } else {
         alert(data.error);
       }

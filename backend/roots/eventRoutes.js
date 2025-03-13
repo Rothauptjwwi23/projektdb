@@ -1,42 +1,39 @@
-// roots/eventRoutes.js
-import { getEvents, addEvent, bookEvent } from "../core/eventStore.js"; // Verwenden von import für eventStore
+import { getEvents, addEvent, bookEvent } from '../core/eventStore.js';
 
-const eventRoutes = async (fastify, options) => {
-  // 📌 GET: Alle Events abrufen
-  fastify.get("/events", async (request, reply) => {
+export default async function eventRoutes(fastify, options) {
+  fastify.get('/events', async (request, reply) => {  // <-- HIER ANGEPASST!
     try {
       const events = await getEvents();
       return { events };
     } catch (error) {
-      return reply.status(500).send({ error: "Fehler beim Abrufen der Events" });
+      reply.status(500).send({ error: 'Fehler beim Abrufen der Events' });
     }
   });
 
-  // 📌 POST: Event hinzufügen
-  fastify.post("/events", async (request, reply) => {
+  fastify.post('/events', async (request, reply) => {
     const eventData = request.body;
-    const result = await addEvent(eventData);
-    if (result.success) {
-      return { message: "Event erfolgreich hinzugefügt!", id: result.id };
-    } else {
-      return reply.status(400).send({ error: result.error });
+    try {
+      const result = await addEvent(eventData);
+      reply.status(201).send({ message: 'Event hinzugefügt!', id: result.id });
+    } catch (error) {
+      reply.status(500).send({ error: 'Fehler beim Hinzufügen des Events' });
     }
   });
 
-  // 📌 POST: Event buchen
-  fastify.post("/events/book", async (request, reply) => {
+  fastify.post('/events/book', async (request, reply) => {
     const { eventId } = request.body;
     if (!eventId) {
-      return reply.status(400).send({ error: "Event ID ist erforderlich!" });
+      return reply.status(400).send({ error: "Event ID erforderlich!" });
     }
-
-    const result = await bookEvent(eventId);
-    if (result.success) {
-      return { message: "Buchung erfolgreich!", event: result.event };
-    } else {
-      return reply.status(400).send({ error: result.message || result.error });
+    try {
+      const result = await bookEvent(eventId);
+      if (result.success) {
+        reply.send({ message: 'Buchung erfolgreich!' });
+      } else {
+        reply.status(400).send({ error: result.message });
+      }
+    } catch (error) {
+      reply.status(500).send({ error: 'Fehler beim Buchen des Events' });
     }
   });
 };
-
-export default eventRoutes;
