@@ -2,62 +2,47 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-white py-6">
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-6 md:mb-0">
-            <h3 className="text-xl font-bold mb-2">
-              <span className="highlight">🎫</span> EventBooker
-            </h3>
-            <p className="text-sm text-gray-400">Die einfachste Art, Events zu finden und zu buchen.</p>
-          </div>
-          
-          <div className="mb-6 md:mb-0">
-            <h3 className="text-lg font-semibold mb-2">Beliebte Kategorien</h3>
-            <ul className="text-gray-400">
-              <li className="mb-1">
-                <Link href="/events?category=Konzert" className="hover:text-white transition-colors">
-                  Konzerte
-                </Link>
-              </li>
-              <li className="mb-1">
-                <Link href="/events?category=Workshop" className="hover:text-white transition-colors">
-                  Workshops
-                </Link>
-              </li>
-              <li className="mb-1">
-                <Link href="/events?category=Sport" className="hover:text-white transition-colors">
-                  Sport
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Rechtliches</h3>
-            <ul className="text-gray-400">
-              <li className="mb-1">
-                <Link href="/impressum" className="hover:text-white transition-colors">
-                  Impressum
-                </Link>
-              </li>
-              <li className="mb-1">
-                <Link href="/agb" className="hover:text-white transition-colors">
-                  AGB
-                </Link>
-              </li>
-              <li className="mb-1">
-                <Link href="/datenschutz" className="hover:text-white transition-colors">
-                  Datenschutz
-                </Link>
-              </li>
-            </ul>
-          </div>
+    <footer className="bg-gray-900 text-white mt-auto">
+      {/* Content-Footer separator */}
+      <div className="footer-separator"></div>
+      
+      {/* Main footer content */}
+      <div className="footer-main">
+        {/* Legal section */}
+        <div className="footer-section">
+          <h4 className="text-lg font-semibold mb-4">Rechtliches</h4>
+          <ul className="footer-links">
+            <li>
+              <Link href="/impressum" className="hover:text-primary">
+                Impressum
+              </Link>
+            </li>
+            <li>
+              <Link href="/agb" className="hover:text-primary">
+                AGB
+              </Link>
+            </li>
+            <li>
+              <Link href="/datenschutz" className="hover:text-primary">
+                Datenschutz
+              </Link>
+            </li>
+          </ul>
         </div>
         
-        <div className="border-t border-gray-800 mt-6 pt-6 text-center">
-          <p className="text-sm text-gray-500">&copy; {new Date().getFullYear()} EventBooker - Alle Rechte vorbehalten</p>
+        {/* Contact section */}
+        <div className="footer-section">
+          <h4 className="text-lg font-semibold mb-4">Kontakt</h4>
+          <p className="mb-2">Haben Sie Fragen?</p>
+          <Link href="/kontakt" className="text-primary hover:text-secondary">
+            Kontaktieren Sie uns!
+          </Link>
         </div>
+      </div>
+      
+      {/* Copyright */}
+      <div className="footer-copyright py-4 border-t border-gray-800 mt-8">
+        © {new Date().getFullYear()} EventBooker - Alle Rechte vorbehalten
       </div>
     </footer>
   );
