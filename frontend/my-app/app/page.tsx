@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+interface Event {
+  _id: string;
+  title: string;
+  available_seats: number;
+}
+
 export default function Home() {
-  const [events, setEvents] = useState<{ _id: string; title: string; available_seats: number }[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [title, setTitle] = useState("");
   const [availableSeats, setAvailableSeats] = useState("");
   const [loading, setLoading] = useState(true);
@@ -53,60 +59,6 @@ export default function Home() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-900 text-white p-6">
-      <h1 className="text-5xl font-extrabold text-white mb-8 text-center">🎟️ Event Buchung</h1>
-
-      {loading && <p className="text-blue-400 text-lg">🔄 Daten werden geladen...</p>}
-      {error && <p className="text-red-400 text-lg">⚠️ Fehler: {error}</p>}
-
-      <form onSubmit={handleSubmit} className="w-full max-w-lg bg-gray-800 p-8 rounded-xl shadow-lg mb-8">
-        <h2 className="text-2xl font-semibold text-white mb-6 text-center">➕ Neues Event</h2>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Event Titel"
-          className="w-full p-3 border border-gray-600 rounded-lg mb-4 bg-gray-700 text-white shadow-sm focus:ring focus:ring-blue-300"
-          required
-        />
-        <input
-          type="number"
-          value={availableSeats}
-          onChange={(e) => setAvailableSeats(e.target.value)}
-          placeholder="Verfügbare Plätze"
-          className="w-full p-3 border border-gray-600 rounded-lg mb-4 bg-gray-700 text-white shadow-sm focus:ring focus:ring-blue-300"
-          required
-        />
-        <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">
-          ➕ Hinzufügen
-        </button>
-      </form>
-
-      <div className="w-full max-w-7xl">
-        <h2 className="text-3xl font-semibold text-white mb-6 text-center">🎭 Verfügbare Events</h2>
-        {events.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 place-items-center">
-            {events.map((event) => (
-              <div key={event._id} className="bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center text-center w-64">
-                <h3 className="text-xl font-semibold text-white mb-2">{event.title}</h3>
-                <p className="text-gray-300">Verfügbare Plätze: {event.available_seats ?? "Nicht verfügbar"}</p>
-                <button
-                  onClick={() => bookEvent(event._id)}
-                  className="mt-4 w-full bg-green-500 text-white py-2 rounded-lg text-lg font-semibold hover:bg-green-600 transition"
-                >
-                  🎟️ Buchen
-                </button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-400 text-lg text-center">Keine Events verfügbar.</p>
-        )}
-      </div>
-    </div>
-  );
-
   async function bookEvent(eventId: string) {
     try {
       const response = await fetch("http://127.0.0.1:3001/events/book", {
@@ -125,4 +77,122 @@ export default function Home() {
       console.error("Fehler beim Buchen des Events:", error);
     }
   }
+
+  return (
+    <div className="event-page">
+      <div className="container">
+        <h1>Event<span className="highlight">Booking</span></h1>
+
+        {/* Status indicators */}
+        <div className="status-container">
+          {loading && (
+            <div className="loading-indicator">
+              <div className="spinner"></div>
+              <span>Lädt...</span>
+            </div>
+          )}
+          
+          {error && (
+            <div className="error-message">
+              <p>{error}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Creation form */}
+        <div className="form-container">
+          <div className="card">
+            <h2>Neues Event erstellen</h2>
+            <form onSubmit={handleSubmit} className="event-form">
+              <div className="form-group">
+                <label htmlFor="title">Titel</label>
+                <input
+                  id="title"
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Event Titel"
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="seats">Verfügbare Plätze</label>
+                <input
+                  id="seats"
+                  type="number"
+                  value={availableSeats}
+                  onChange={(e) => setAvailableSeats(e.target.value)}
+                  placeholder="Anzahl der Plätze"
+                  required
+                />
+              </div>
+              
+              <button type="submit" className="create-button">
+                <span>Erstellen</span>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="20" 
+                  height="20" 
+                  viewBox="0 0 20 20" 
+                  fill="currentColor"
+                >
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Events list */}
+        <div className="events-container">
+          <h2>Verfügbare Events</h2>
+          
+          {events.length === 0 && !loading ? (
+            <div className="empty-state">
+              <div className="empty-icon">
+                <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p>Keine Events verfügbar.</p>
+            </div>
+          ) : (
+            <div className="events-grid">
+              {events.map((event) => (
+                <div key={event._id} className="card event-card">
+                  <div className="event-content">
+                    <h3>{event.title}</h3>
+                    <div className="event-details">
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span>
+                        {event.available_seats} {event.available_seats === 1 ? 'Platz' : 'Plätze'} verfügbar
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => bookEvent(event._id)}
+                      className="book-button"
+                    >
+                      <svg 
+                        width="20"
+                        height="20"
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                      </svg>
+                      Buchen
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
