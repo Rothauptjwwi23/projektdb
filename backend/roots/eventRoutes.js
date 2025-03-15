@@ -1,26 +1,27 @@
-import { getEvents, addEvent, bookEvent } from '../core/eventStore.js';
+import { getEvents, addEvent, bookEvent } from "../core/eventStore.js";
 
 export default async function eventRoutes(fastify, options) {
-  fastify.get('/events', async (request, reply) => {  // <-- HIER ANGEPASST!
+  fastify.get("/events", async (request, reply) => {
     try {
       const events = await getEvents();
       return { events };
     } catch (error) {
-      reply.status(500).send({ error: 'Fehler beim Abrufen der Events' });
+      reply.status(500).send({ error: "Fehler beim Abrufen der Events" });
     }
   });
 
-  fastify.post('/events', async (request, reply) => {
+  fastify.post("/events", async (request, reply) => {
     const eventData = request.body;
     try {
       const result = await addEvent(eventData);
-      reply.status(201).send({ message: 'Event hinzugefügt!', id: result.id });
+      reply.status(201).send({ message: "Event hinzugefügt!", id: result.id });
     } catch (error) {
-      reply.status(500).send({ error: 'Fehler beim Hinzufügen des Events' });
+      reply.status(500).send({ error: "Fehler beim Hinzufügen des Events" });
     }
   });
 
-  fastify.post('/events/book', async (request, reply) => {
+  // ✅ Route für das Buchen eines Events
+  fastify.post("/events/book", async (request, reply) => {
     const { eventId } = request.body;
     if (!eventId) {
       return reply.status(400).send({ error: "Event ID erforderlich!" });
@@ -28,12 +29,12 @@ export default async function eventRoutes(fastify, options) {
     try {
       const result = await bookEvent(eventId);
       if (result.success) {
-        reply.send({ message: 'Buchung erfolgreich!' });
+        reply.send({ message: "Buchung erfolgreich!", updatedEvent: result.updatedEvent });
       } else {
-        reply.status(400).send({ error: result.message });
+        reply.status(400).send({ error: result.error });
       }
     } catch (error) {
-      reply.status(500).send({ error: 'Fehler beim Buchen des Events' });
+      reply.status(500).send({ error: "Fehler beim Buchen des Events" });
     }
   });
-};
+}

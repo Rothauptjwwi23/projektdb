@@ -6,10 +6,14 @@ import eventRoutes from './roots/eventRoutes.js'; // Importiere die eventRoutes
 const fastify = Fastify({ logger: true });
 
 // CORS aktivieren
-fastify.register(cors, {
-  origin: "*", // Alle Ursprünge erlauben
-  methods: ["GET", "POST"],
+import FastifyCors from "@fastify/cors";
+
+fastify.register(FastifyCors, {
+  origin: "*", 
+  methods: ["GET", "POST", "OPTIONS"], // OPTIONS hinzufügen!
+  allowedHeaders: ["Content-Type"],
 });
+
 
 
 
