@@ -5,13 +5,19 @@ import { useEffect, useState } from "react";
 interface Event {
   _id: string;
   title: string;
-  available_seats: number;
+  capacity: number;
+  date: string;
+  location: string;
+  type: string;
 }
 
 export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
   const [title, setTitle] = useState("");
-  const [availableSeats, setAvailableSeats] = useState("");
+  const [capacity, setCapacity] = useState("");
+  const [date, setDate] = useState("");
+  const [location, setLocation] = useState("");
+  const [type, setType] = useState(""); // Auswahl für Event-Typ
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,11 +40,16 @@ export default function Home() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!title || !availableSeats) {
-      alert("Bitte Titel und Plätze eingeben.");
+
+    // Überprüfung der Eingabewerte
+    const eventCapacity = Number(capacity);
+    if (!title || isNaN(eventCapacity) || eventCapacity <= 0 || !date || !location || !type) {
+      alert("Bitte fülle alle Felder korrekt aus.");
       return;
     }
-    const eventData = { title, available_seats: Number(availableSeats) };
+
+    // Event-Daten zusammenstellen
+    const eventData = { title, capacity: eventCapacity, date, location, type };
 
     try {
       const response = await fetch("http://127.0.0.1:3001/events", {
@@ -52,7 +63,10 @@ export default function Home() {
       const result = await response.json();
       setEvents((prevEvents) => [...prevEvents, { ...eventData, _id: result.id }]);
       setTitle("");
-      setAvailableSeats("");
+      setCapacity("");
+      setDate("");
+      setLocation("");
+      setType("");
       alert("Event erfolgreich hinzugefügt!");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Unbekannter Fehler");
@@ -115,30 +129,62 @@ export default function Home() {
                   required
                 />
               </div>
-              
+
               <div className="form-group">
-                <label htmlFor="seats">Verfügbare Plätze</label>
+                <label htmlFor="capacity">Kapazität</label>
                 <input
-                  id="seats"
+                  id="capacity"
                   type="number"
-                  value={availableSeats}
-                  onChange={(e) => setAvailableSeats(e.target.value)}
+                  value={capacity}
+                  onChange={(e) => setCapacity(e.target.value)}
                   placeholder="Anzahl der Plätze"
+                  min="1"
                   required
                 />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="date">Datum</label>
+                <input
+                  id="date"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="location">Ort</label>
+                <input
+                  id="location"
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Ort des Events"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="type">Event-Typ</label>
+                <select
+                  id="type"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  required
+                >
+                  <option value="">Bitte wählen...</option>
+                  <option value="Workshop">Workshop</option>
+                  <option value="Weiterbildung">Weiterbildung</option>
+                  <option value="Networking">Networking</option>
+                  <option value="Sport">Sport</option>
+                  <option value="Konzert">Konzert</option>
+                </select>
               </div>
               
               <button type="submit" className="create-button">
                 <span>Erstellen</span>
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="20" 
-                  height="20" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor"
-                >
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-                </svg>
               </button>
             </form>
           </div>
@@ -149,41 +195,21 @@ export default function Home() {
           <h2>Verfügbare Events</h2>
           
           {events.length === 0 && !loading ? (
-            <div className="empty-state">
-              <div className="empty-icon">
-                <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p>Keine Events verfügbar.</p>
-            </div>
+            <p>Keine Events verfügbar.</p>
           ) : (
             <div className="events-grid">
               {events.map((event) => (
                 <div key={event._id} className="card event-card">
                   <div className="event-content">
                     <h3>{event.title}</h3>
-                    <div className="event-details">
-                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      <span>
-                        {event.available_seats} {event.available_seats === 1 ? 'Platz' : 'Plätze'} verfügbar
-                      </span>
-                    </div>
+                    <p><strong>Datum:</strong> {event.date}</p>
+                    <p><strong>Ort:</strong> {event.location}</p>
+                    <p><strong>Typ:</strong> {event.type}</p>
+                    <p><strong>Plätze:</strong> {event.capacity} verfügbar</p>
                     <button
                       onClick={() => bookEvent(event._id)}
                       className="book-button"
                     >
-                      <svg 
-                        width="20"
-                        height="20"
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-                      </svg>
                       Buchen
                     </button>
                   </div>

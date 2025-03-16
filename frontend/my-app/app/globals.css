@@ -410,3 +410,22 @@ footer {
 .content {
   flex: 1;
 }
+select {
+  background-color: #1f2937; /* Dunkler Hintergrund */
+  color: #e5e7eb; /* Helle Schrift */
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #374151;
+}
+
+select option {
+  background-color: #374151; /* Hintergrundfarbe für Dropdown-Optionen */
+  color: #e5e7eb; /* Helle Schrift */
+  padding: 10px;
+}
+
+select option:hover,
+select option:focus {
+  background-color: #4f46e5; /* Hover-Farbe */
+  color: #ffffff;
+}

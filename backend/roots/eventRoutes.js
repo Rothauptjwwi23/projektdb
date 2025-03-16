@@ -12,11 +12,16 @@ export default async function eventRoutes(fastify, options) {
 
   fastify.post("/events", async (request, reply) => {
     const eventData = request.body;
+
+    if (!eventData.title || !eventData.capacity || eventData.capacity <= 0) {
+      return reply.status(400).send({ error: "Ungültige Eingabe: Kapazität muss größer als 0 sein." });
+    }
+
     try {
       const result = await addEvent(eventData);
       reply.status(201).send({ message: "Event hinzugefügt!", id: result.id });
     } catch (error) {
-      reply.status(500).send({ error: "Fehler beim Hinzufügen des Events" });
+      reply.status(500).send({ error: error.message });
     }
   });
 
