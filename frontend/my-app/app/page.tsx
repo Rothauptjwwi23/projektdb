@@ -8,7 +8,10 @@ interface Event {
   capacity: number;
   date: string;
   location: string;
-  type: string;
+  category: string;
+  short_description: string;
+  long_description: string;
+  tags: string[];
 }
 
 export default function Home() {
@@ -17,7 +20,10 @@ export default function Home() {
   const [capacity, setCapacity] = useState("");
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
-  const [type, setType] = useState(""); // Auswahl für Event-Typ
+  const [category, setCategory] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
+  const [longDescription, setLongDescription] = useState("");
+  const [tags, setTags] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,15 +47,23 @@ export default function Home() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    // Überprüfung der Eingabewerte
     const eventCapacity = Number(capacity);
-    if (!title || isNaN(eventCapacity) || eventCapacity <= 0 || !date || !location || !type) {
-      alert("Bitte fülle alle Felder korrekt aus.");
+    if (!title || isNaN(eventCapacity) || eventCapacity <= 0 || !date || !location || !category) {
+      alert("Bitte fülle alle erforderlichen Felder aus.");
       return;
     }
 
     // Event-Daten zusammenstellen
-    const eventData = { title, capacity: eventCapacity, date, location, type };
+    const eventData = {
+      title,
+      capacity: eventCapacity,
+      date,
+      location,
+      category,
+      short_description: shortDescription,
+      long_description: longDescription,
+      tags: tags.split(",").map((tag) => tag.trim()),
+    };
 
     try {
       const response = await fetch("http://127.0.0.1:3001/events", {
@@ -66,7 +80,10 @@ export default function Home() {
       setCapacity("");
       setDate("");
       setLocation("");
-      setType("");
+      setCategory("");
+      setShortDescription("");
+      setLongDescription("");
+      setTags("");
       alert("Event erfolgreich hinzugefügt!");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Unbekannter Fehler");
@@ -105,7 +122,7 @@ export default function Home() {
               <span>Lädt...</span>
             </div>
           )}
-          
+
           {error && (
             <div className="error-message">
               <p>{error}</p>
@@ -120,69 +137,39 @@ export default function Home() {
             <form onSubmit={handleSubmit} className="event-form">
               <div className="form-group">
                 <label htmlFor="title">Titel</label>
-                <input
-                  id="title"
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Event Titel"
-                  required
-                />
+                <input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Event Titel" required />
               </div>
 
               <div className="form-group">
                 <label htmlFor="capacity">Kapazität</label>
-                <input
-                  id="capacity"
-                  type="number"
-                  value={capacity}
-                  onChange={(e) => setCapacity(e.target.value)}
-                  placeholder="Anzahl der Plätze"
-                  min="1"
-                  required
-                />
+                <input id="capacity" type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="Anzahl der Plätze" min="1" required />
               </div>
 
               <div className="form-group">
                 <label htmlFor="date">Datum</label>
-                <input
-                  id="date"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  required
-                />
+                <input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
               </div>
 
               <div className="form-group">
                 <label htmlFor="location">Ort</label>
-                <input
-                  id="location"
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Ort des Events"
-                  required
-                />
+                <input id="location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ort des Events" required />
               </div>
 
               <div className="form-group">
-                <label htmlFor="type">Event-Typ</label>
-                <select
-                  id="type"
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  required
-                >
-                  <option value="">Bitte wählen...</option>
-                  <option value="Workshop">Workshop</option>
-                  <option value="Weiterbildung">Weiterbildung</option>
-                  <option value="Networking">Networking</option>
-                  <option value="Sport">Sport</option>
-                  <option value="Konzert">Konzert</option>
-                </select>
+                <label htmlFor="shortDescription">Kurzbeschreibung</label>
+                <input id="shortDescription" type="text" value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} placeholder="Kurze Eventbeschreibung" required />
               </div>
-              
+
+              <div className="form-group">
+                <label htmlFor="longDescription">Eventbeschreibung</label>
+                <input id="longDescription" type="text" value={longDescription} onChange={(e) => setLongDescription(e.target.value)} placeholder="Detaillierte Eventbeschreibung" required />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="tags">Tags (durch Komma getrennt)</label>
+                <input id="tags" type="text" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Tag1, Tag2, Tag3" />
+              </div>
+
               <button type="submit" className="create-button">
                 <span>Erstellen</span>
               </button>
@@ -190,10 +177,10 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Events list */}
+        {/* Events list - UNVERÄNDERT */}
         <div className="events-container">
           <h2>Verfügbare Events</h2>
-          
+
           {events.length === 0 && !loading ? (
             <p>Keine Events verfügbar.</p>
           ) : (
@@ -202,22 +189,18 @@ export default function Home() {
                 <div key={event._id} className="card event-card">
                   <div className="event-content">
                     <h3>{event.title}</h3>
-                    <p><strong>Datum:</strong> {event.date}</p>
-                    <p><strong>Ort:</strong> {event.location}</p>
-                    <p><strong>Typ:</strong> {event.type}</p>
+                    <p>{event.date}</p> {/* Nur das Datum anzeigen */}
+                    <p>{event.location}</p> {/* Nur der Ort wird angezeigt */}
+                    <p>{event.short_description}</p> {/* Nur die Kurzbeschreibung */}
                     <p><strong>Plätze:</strong> {event.capacity} verfügbar</p>
-                    <button
-                      onClick={() => bookEvent(event._id)}
-                      className="book-button"
-                    >
-                      Buchen
-                    </button>
+                    <button onClick={() => bookEvent(event._id)} className="book-button">Buchen</button>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
+
       </div>
     </div>
   );
