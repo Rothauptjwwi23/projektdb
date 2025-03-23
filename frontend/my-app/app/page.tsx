@@ -9,7 +9,7 @@ interface Event {
   available_seats: number;
   date: string;
   location: string;
-  category: string;
+  type: string;
   short_description: string;
   long_description: string;
   tags: string[];
@@ -21,12 +21,14 @@ export default function Home() {
   const [capacity, setCapacity] = useState("");
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
-  const [category, setCategory] = useState("");
+  const [type, setType] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [longDescription, setLongDescription] = useState("");
   const [tags, setTags] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const eventTypes = ["Konzert", "Sport", "Networking", "Workshop", "Weiterbildung"];
 
   useEffect(() => {
     fetchEvents();
@@ -49,7 +51,7 @@ export default function Home() {
     event.preventDefault();
 
     const eventCapacity = Number(capacity);
-    if (!title || isNaN(eventCapacity) || eventCapacity <= 0 || !date || !location || !category) {
+    if (!title || isNaN(eventCapacity) || eventCapacity <= 0 || !date || !location || !type) {
       alert("Bitte fülle alle erforderlichen Felder aus.");
       return;
     }
@@ -59,7 +61,7 @@ export default function Home() {
       capacity: eventCapacity,
       date,
       location,
-      category,
+      type,
       short_description: shortDescription,
       long_description: longDescription,
       tags: tags.split(",").map((tag) => tag.trim()),
@@ -80,7 +82,7 @@ export default function Home() {
       setCapacity("");
       setDate("");
       setLocation("");
-      setCategory("");
+      setType("");
       setShortDescription("");
       setLongDescription("");
       setTags("");
@@ -114,7 +116,6 @@ export default function Home() {
       <div className="container">
         <h1>Event<span className="highlight">Booking</span></h1>
 
-        {/* Status indicators */}
         <div className="status-container">
           {loading && (
             <div className="loading-indicator">
@@ -122,7 +123,6 @@ export default function Home() {
               <span>Lädt...</span>
             </div>
           )}
-
           {error && (
             <div className="error-message">
               <p>{error}</p>
@@ -130,7 +130,6 @@ export default function Home() {
           )}
         </div>
 
-        {/* Creation form */}
         <div className="form-container">
           <div className="card">
             <h2>Neues Event erstellen</h2>
@@ -139,20 +138,28 @@ export default function Home() {
                 <label htmlFor="title">Titel</label>
                 <input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Event Titel" required />
               </div>
-
               <div className="form-group">
                 <label htmlFor="capacity">Kapazität</label>
                 <input id="capacity" type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="Anzahl der Plätze" min="1" required />
               </div>
-
               <div className="form-group">
                 <label htmlFor="date">Datum</label>
                 <input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
               </div>
-
               <div className="form-group">
                 <label htmlFor="location">Ort</label>
                 <input id="location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ort des Events" required />
+              </div>
+
+              {/* NEU: Kategorie Dropdown */}
+              <div className="form-group">
+                <label htmlFor="type">Kategorie</label>
+                <select id="type" value={type} onChange={(e) => setType(e.target.value)} required>
+                  <option value="">Bitte wählen</option>
+                  {eventTypes.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group">
@@ -177,10 +184,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Events list */}
         <div className="events-container">
           <h2>Verfügbare Events</h2>
-
           {events.length === 0 && !loading ? (
             <p>Keine Events verfügbar.</p>
           ) : (

@@ -1,5 +1,3 @@
-// Pfad: frontend/my-app/app/page.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,7 +9,7 @@ interface Event {
   available_seats: number;
   date: string;
   location: string;
-  category: string;
+  type: string;
   short_description: string;
   long_description: string;
   tags: string[];
@@ -23,12 +21,14 @@ export default function Home() {
   const [capacity, setCapacity] = useState("");
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
-  const [category, setCategory] = useState("");
+  const [type, setType] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [longDescription, setLongDescription] = useState("");
   const [tags, setTags] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const eventTypes = ["Konzert", "Sport", "Networking", "Workshop", "Weiterbildung"];
 
   useEffect(() => {
     fetchEvents();
@@ -58,14 +58,13 @@ export default function Home() {
       eventCapacity <= 0 ||
       !date ||
       !location.trim() ||
-      !category.trim() ||
+      !type.trim() ||
       !shortDescription.trim() ||
       !longDescription.trim()
     ) {
       alert("Bitte fülle alle erforderlichen Felder aus.");
       return;
     }
-    
 
     const user = localStorage.getItem("user");
     const token = user ? JSON.parse(user).token : null;
@@ -76,7 +75,7 @@ export default function Home() {
       available_seats: eventCapacity,
       date,
       location: location.trim(),
-      category: category.trim(),
+      type: type.trim(),
       short_description: shortDescription.trim(),
       long_description: longDescription.trim(),
       tags: tags.split(",").map((tag) => tag.trim()),
@@ -100,7 +99,7 @@ export default function Home() {
       setCapacity("");
       setDate("");
       setLocation("");
-      setCategory("");
+      setType("");
       setShortDescription("");
       setLongDescription("");
       setTags("");
@@ -143,7 +142,6 @@ export default function Home() {
               <span>Lädt...</span>
             </div>
           )}
-
           {error && (
             <div className="error-message">
               <p>{error}</p>
@@ -172,8 +170,15 @@ export default function Home() {
                 <input id="location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} required />
               </div>
               <div className="form-group">
-                <label htmlFor="category">Kategorie</label>
-                <input id="category" type="text" value={category} onChange={(e) => setCategory(e.target.value)} required />
+                <label htmlFor="type">Kategorie</label>
+                <select id="type" value={type} onChange={(e) => setType(e.target.value)} required>
+                  <option value="">Bitte wählen</option>
+                  {eventTypes.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="form-group">
                 <label htmlFor="shortDescription">Kurzbeschreibung</label>
@@ -196,7 +201,6 @@ export default function Home() {
 
         <div className="events-container">
           <h2>Verfügbare Events</h2>
-
           {events.length === 0 && !loading ? (
             <p>Keine Events verfügbar.</p>
           ) : (
@@ -211,9 +215,6 @@ export default function Home() {
                     <p>
                       <strong>Plätze:</strong> {event.available_seats} verfügbar
                     </p>
-                    <button onClick={() => bookEvent(event._id)} className="book-button">
-                      Buchen
-                    </button>
                   </div>
                 </div>
               ))}

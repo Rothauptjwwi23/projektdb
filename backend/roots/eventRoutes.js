@@ -1,4 +1,3 @@
-// eventRoutes.js
 import { getEvents, addEvent, bookEvent } from "../core/eventStore.js";
 import jwt from 'jsonwebtoken';
 
@@ -44,7 +43,7 @@ export default async function eventRoutes(fastify, options) {
       "capacity",
       "date",
       "location",
-      "category",
+      "type", // ✅ angepasst von "category" auf "type"
       "short_description",
       "long_description"
     ];

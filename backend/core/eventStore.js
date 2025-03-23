@@ -1,7 +1,7 @@
 import nano from "nano";
 
 // ✅ CouchDB-Verbindung mit Zugangsdaten
-const couchDBUrl = "http://admin:passwort1234@127.0.0.1:5984"; // Deine CouchDB URL
+const couchDBUrl = "http://admin:passwort1234@127.0.0.1:5984";
 const couch = nano(couchDBUrl);
 
 // ✅ Definiere die "events"-Datenbank
@@ -35,7 +35,7 @@ export const addEvent = async (eventData) => {
       "capacity",
       "date",
       "location",
-      "category",
+      "type", // ✅ ebenfalls auf "type" geändert
       "short_description",
       "long_description"
     ];
@@ -51,11 +51,11 @@ export const addEvent = async (eventData) => {
 
     const newEvent = {
       title: eventData.title,
-      capacity: eventData.capacity, // Gesamt-Kapazität
-      available_seats: eventData.available_seats ?? eventData.capacity, // gleiche Zahl am Start
+      capacity: eventData.capacity,
+      available_seats: eventData.available_seats ?? eventData.capacity,
       date: eventData.date,
       location: eventData.location,
-      category: eventData.category,
+      type: eventData.type,
       short_description: eventData.short_description,
       long_description: eventData.long_description,
       tags: eventData.tags || [],
