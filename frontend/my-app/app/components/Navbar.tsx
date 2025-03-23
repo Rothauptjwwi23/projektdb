@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Diese Version enthält einen Test-Text, um zu prüfen, ob die Datei überhaupt geladen wird
 export default function Navbar() {
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [filters, setFilters] = useState({
@@ -19,7 +20,6 @@ export default function Navbar() {
 
   const handleSearch = () => {
     console.log("Search parameters:", filters);
-    // You can implement actual search functionality here
   };
 
   return (
@@ -37,7 +37,7 @@ export default function Navbar() {
               </svg>
             </span>
             <span className="text-lg font-bold bg-gradient-to-r from-white to-primary/50 bg-clip-text text-transparent">
-              EventBooking
+              EventBooking - TEST
             </span>
           </Link>
         </div>
@@ -98,7 +98,20 @@ export default function Navbar() {
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <span className="hidden sm:inline">Search Events</span>
+            <span className="hidden sm:inline">TESTBUTTON</span>
+          </button>
+          
+          {/* Test Login Button */}
+          <button
+            onClick={() => console.log("Test login clicked")}
+            className="bg-secondary hover:bg-primary px-3 py-1.5 rounded-md flex items-center gap-2 text-sm font-medium transition-all shadow-sm hover:shadow-primary/20"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+            <span className="hidden sm:inline">TEST LOGIN</span>
           </button>
           
           {/* Mobile menu button - shows on smaller screens */}
@@ -126,7 +139,7 @@ export default function Navbar() {
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
               </svg>
-              Filter Options
+              TEST FILTER
             </h3>
             
             <div className="space-y-3">

@@ -6,6 +6,7 @@ interface Event {
   _id: string;
   title: string;
   capacity: number;
+  available_seats: number;
   date: string;
   location: string;
   category: string;
@@ -53,7 +54,6 @@ export default function Home() {
       return;
     }
 
-    // Event-Daten zusammenstellen
     const eventData = {
       title,
       capacity: eventCapacity,
@@ -75,7 +75,7 @@ export default function Home() {
       if (!response.ok) throw new Error("Fehler beim Speichern der Daten");
 
       const result = await response.json();
-      setEvents((prevEvents) => [...prevEvents, { ...eventData, _id: result.id }]);
+      setEvents((prevEvents) => [...prevEvents, { ...eventData, _id: result.id, available_seats: eventCapacity }]);
       setTitle("");
       setCapacity("");
       setDate("");
@@ -177,7 +177,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Events list - UNVERÄNDERT */}
+        {/* Events list */}
         <div className="events-container">
           <h2>Verfügbare Events</h2>
 
@@ -189,10 +189,10 @@ export default function Home() {
                 <div key={event._id} className="card event-card">
                   <div className="event-content">
                     <h3>{event.title}</h3>
-                    <p>{event.date}</p> {/* Nur das Datum anzeigen */}
-                    <p>{event.location}</p> {/* Nur der Ort wird angezeigt */}
-                    <p>{event.short_description}</p> {/* Nur die Kurzbeschreibung */}
-                    <p><strong>Plätze:</strong> {event.capacity} verfügbar</p>
+                    <p>{event.date}</p>
+                    <p>{event.location}</p>
+                    <p>{event.short_description}</p>
+                    <p><strong>Plätze:</strong> {event.available_seats} verfügbar</p>
                     <button onClick={() => bookEvent(event._id)} className="book-button">Buchen</button>
                   </div>
                 </div>
@@ -200,7 +200,6 @@ export default function Home() {
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

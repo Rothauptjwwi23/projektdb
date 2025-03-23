@@ -1,4 +1,30 @@
+// eventRoutes.js
 import { getEvents, addEvent, bookEvent } from "../core/eventStore.js";
+import jwt from 'jsonwebtoken';
+
+const checkAdminRole = async (request, reply, done) => {
+  try {
+    const authHeader = request.headers.authorization;
+    if (!authHeader) {
+      return reply.status(401).send({ error: 'Kein Authentifizierungstoken gefunden' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, 'Geheim_Key_1234');
+
+    if (!decoded.user || decoded.user.role !== 'admin') {
+      return reply.status(403).send({ error: 'Zugriff verweigert. Nur Administratoren können Events erstellen.' });
+    }
+
+    request.user = decoded.user;
+    done();
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError') {
+      return reply.status(401).send({ error: 'Ungültiges Token' });
+    }
+    return reply.status(500).send({ error: 'Interner Serverfehler bei der Authentifizierung' });
+  }
+};
 
 export default async function eventRoutes(fastify, options) {
   fastify.get("/events", async (request, reply) => {
@@ -13,8 +39,20 @@ export default async function eventRoutes(fastify, options) {
   fastify.post("/events", async (request, reply) => {
     const eventData = request.body;
 
-    if (!eventData.title || !eventData.capacity || eventData.capacity <= 0) {
-      return reply.status(400).send({ error: "Ungültige Eingabe: Kapazität muss größer als 0 sein." });
+    const requiredFields = [
+      "title",
+      "capacity",
+      "date",
+      "location",
+      "category",
+      "short_description",
+      "long_description"
+    ];
+
+    for (const field of requiredFields) {
+      if (!eventData[field] || (typeof eventData[field] === "string" && eventData[field].trim() === "")) {
+        return reply.status(400).send({ error: `Feld \"${field}\" darf nicht leer sein.` });
+      }
     }
 
     try {
@@ -25,7 +63,6 @@ export default async function eventRoutes(fastify, options) {
     }
   });
 
-  // ✅ Route für das Buchen eines Events
   fastify.post("/events/book", async (request, reply) => {
     const { eventId } = request.body;
     if (!eventId) {

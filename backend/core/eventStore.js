@@ -30,14 +30,35 @@ export const getEvents = async () => {
 
 export const addEvent = async (eventData) => {
   try {
-    if (!eventData.title || !eventData.capacity || eventData.capacity <= 0) {
-      throw new Error("Ungültige Daten: Titel erforderlich, Kapazität muss > 0 sein.");
+    const requiredFields = [
+      "title",
+      "capacity",
+      "date",
+      "location",
+      "category",
+      "short_description",
+      "long_description"
+    ];
+
+    for (const field of requiredFields) {
+      if (
+        !eventData[field] ||
+        (typeof eventData[field] === "string" && eventData[field].trim() === "")
+      ) {
+        throw new Error(`Feld "${field}" darf nicht leer sein.`);
+      }
     }
 
     const newEvent = {
       title: eventData.title,
-      capacity: eventData.capacity, // Speichert Gesamt-Kapazität
-      available_seats: eventData.capacity, // Gleiche Anzahl bei Start
+      capacity: eventData.capacity, // Gesamt-Kapazität
+      available_seats: eventData.available_seats ?? eventData.capacity, // gleiche Zahl am Start
+      date: eventData.date,
+      location: eventData.location,
+      category: eventData.category,
+      short_description: eventData.short_description,
+      long_description: eventData.long_description,
+      tags: eventData.tags || [],
     };
 
     const response = await eventDB.insert(newEvent);

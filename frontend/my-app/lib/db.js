@@ -1,14 +1,11 @@
 import nano from "nano";
 
-// ✅ CouchDB-Verbindung mit deinen Zugangsdaten
-const couchDBUrl = "http://admin:passwort1234@127.0.0.1:5984"; // Deine CouchDB URL
+// CouchDB-Verbindung
+const couchDBUrl = "http://admin:passwort1234@127.0.0.1:5984";
 const couch = nano(couchDBUrl);
 
-// ✅ Definiere die Datenbanken
-const eventDB = couch.use("events");
-
 // Funktion zum Abrufen einer Datenbank (oder Erstellen, falls sie nicht existiert)
-async function getDatabase(dbName) {
+export async function getDatabase(dbName) {
   try {
     const dbs = await couch.db.list();
     if (!dbs.includes(dbName)) {
@@ -22,16 +19,10 @@ async function getDatabase(dbName) {
   }
 }
 
-// 🛠 Datenbanken erstellen (falls nicht vorhanden)
-async function initializeDatabases() {
+// Datenbanken initialisieren
+export async function initializeDatabases() {
   try {
     const dbs = await couch.db.list();
-    
-    // Events Datenbank
-    if (!dbs.includes("events")) {
-      await couch.db.create("events");
-      console.log(`✅ Datenbank "events" wurde erstellt.`);
-    }
     
     // Users Datenbank
     if (!dbs.includes("users")) {
@@ -39,19 +30,16 @@ async function initializeDatabases() {
       console.log(`✅ Datenbank "users" wurde erstellt.`);
       
       // Indizes für die users Datenbank erstellen (für email Suche)
-      const usersDB = couch.use("users");
-      await usersDB.createIndex({
+      const usersDb = couch.use("users");
+      await usersDb.createIndex({
         index: { fields: ["email"] },
         name: "email-index"
       });
-      console.log(`✅ Index für "users" Datenbank wurde erstellt.`);
     }
   } catch (err) {
     console.error(`❌ Fehler beim Erstellen der Datenbanken: ${err.message}`);
   }
 }
 
-// **Datenbank beim Start initialisieren**
-initializeDatabases();
-
-export { eventDB, getDatabase };
+// Führe die Initialisierung aus
+initializeDatabases().catch(console.error);
