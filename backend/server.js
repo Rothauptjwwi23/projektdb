@@ -1,3 +1,11 @@
+// 📦 .env laden
+import dotenv from "dotenv";
+dotenv.config();
+console.log("📦 SMTP_USER:", process.env.SMTP_USER);
+console.log("📦 SMTP_PASS:", process.env.SMTP_PASS ? "✅ vorhanden" : "❌ fehlt");
+console.log("📦 SMTP_USER:", process.env.SMTP_USER);
+
+
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import eventRoutes from './roots/eventRoutes.js';
