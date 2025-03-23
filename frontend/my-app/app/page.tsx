@@ -1,6 +1,8 @@
+// Pfad: my-app/app/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 interface Event {
   _id: string;
@@ -16,6 +18,19 @@ interface Event {
 }
 
 export default function Home() {
+  // useSearchParams liefert ein ReadonlyURLSearchParams-Objekt,
+  // kann aber je nach Next-Version noch unklare Typen haben:
+  const searchParams = useSearchParams();
+
+  // Werte aus den Search-Parametern holen (mit optionalem Chaining)
+  const s = searchParams?.get("search") || "";
+  const loc = searchParams?.get("location") || "";
+  const d = searchParams?.get("date") || "";
+  const cat = searchParams?.get("category") || "";
+
+  // Ein Objekt bauen und in einen stabilen String umwandeln
+  const query = JSON.stringify({ s, loc, d, cat });
+
   const [events, setEvents] = useState<Event[]>([]);
   const [title, setTitle] = useState("");
   const [capacity, setCapacity] = useState("");
@@ -30,18 +45,36 @@ export default function Home() {
 
   const eventTypes = ["Konzert", "Sport", "Networking", "Workshop", "Weiterbildung"];
 
+  // useEffect lauscht auf Änderungen an "query"
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [query]);
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:3001/events");
+      setLoading(true);
+
+      // Objekt aus dem JSON-String entpacken
+      const { s, loc, d, cat } = JSON.parse(query);
+
+      // Dynamische URL bauen
+      const params = new URLSearchParams();
+      if (s) params.append("search", s);
+      if (loc) params.append("location", loc);
+      if (d) params.append("date", d);
+      if (cat) params.append("category", cat);
+
+      let url = "http://127.0.0.1:3001/events";
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+
+      const response = await fetch(url);
       if (!response.ok) throw new Error("Fehler beim Abrufen der Events");
       const data = await response.json();
       setEvents(data.events);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Unbekannter Fehler");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unbekannter Fehler");
     } finally {
       setLoading(false);
     }
@@ -77,7 +110,10 @@ export default function Home() {
       if (!response.ok) throw new Error("Fehler beim Speichern der Daten");
 
       const result = await response.json();
-      setEvents((prevEvents) => [...prevEvents, { ...eventData, _id: result.id, available_seats: eventCapacity }]);
+      setEvents((prevEvents) => [
+        ...prevEvents,
+        { ...eventData, _id: result.id, available_seats: eventCapacity },
+      ]);
       setTitle("");
       setCapacity("");
       setDate("");
@@ -128,7 +164,9 @@ export default function Home() {
   return (
     <div className="event-page">
       <div className="container">
-        <h1>Event<span className="highlight">Booking</span></h1>
+        <h1>
+          Event<span className="highlight">Booking</span>
+        </h1>
 
         <div className="status-container">
           {loading && (
@@ -150,44 +188,99 @@ export default function Home() {
             <form onSubmit={handleSubmit} className="event-form">
               <div className="form-group">
                 <label htmlFor="title">Titel</label>
-                <input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Event Titel" required />
+                <input
+                  id="title"
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Event Titel"
+                  required
+                />
               </div>
               <div className="form-group">
                 <label htmlFor="capacity">Kapazität</label>
-                <input id="capacity" type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="Anzahl der Plätze" min="1" required />
+                <input
+                  id="capacity"
+                  type="number"
+                  value={capacity}
+                  onChange={(e) => setCapacity(e.target.value)}
+                  placeholder="Anzahl der Plätze"
+                  min="1"
+                  required
+                />
               </div>
               <div className="form-group">
                 <label htmlFor="date">Datum</label>
-                <input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+                <input
+                  id="date"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                />
               </div>
               <div className="form-group">
                 <label htmlFor="location">Ort</label>
-                <input id="location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ort des Events" required />
+                <input
+                  id="location"
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Ort des Events"
+                  required
+                />
               </div>
 
               <div className="form-group">
                 <label htmlFor="type">Kategorie</label>
-                <select id="type" value={type} onChange={(e) => setType(e.target.value)} required>
+                <select
+                  id="type"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  required
+                >
                   <option value="">Bitte wählen</option>
                   {eventTypes.map((t) => (
-                    <option key={t} value={t}>{t}</option>
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="form-group">
                 <label htmlFor="shortDescription">Kurzbeschreibung</label>
-                <input id="shortDescription" type="text" value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} placeholder="Kurze Eventbeschreibung" required />
+                <input
+                  id="shortDescription"
+                  type="text"
+                  value={shortDescription}
+                  onChange={(e) => setShortDescription(e.target.value)}
+                  placeholder="Kurze Eventbeschreibung"
+                  required
+                />
               </div>
 
               <div className="form-group">
                 <label htmlFor="longDescription">Eventbeschreibung</label>
-                <input id="longDescription" type="text" value={longDescription} onChange={(e) => setLongDescription(e.target.value)} placeholder="Detaillierte Eventbeschreibung" required />
+                <input
+                  id="longDescription"
+                  type="text"
+                  value={longDescription}
+                  onChange={(e) => setLongDescription(e.target.value)}
+                  placeholder="Detaillierte Eventbeschreibung"
+                  required
+                />
               </div>
 
               <div className="form-group">
                 <label htmlFor="tags">Tags (durch Komma getrennt)</label>
-                <input id="tags" type="text" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Tag1, Tag2, Tag3" />
+                <input
+                  id="tags"
+                  type="text"
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  placeholder="Tag1, Tag2, Tag3"
+                />
               </div>
 
               <button type="submit" className="create-button">
@@ -210,8 +303,15 @@ export default function Home() {
                     <p>{event.date}</p>
                     <p>{event.location}</p>
                     <p>{event.short_description}</p>
-                    <p><strong>Plätze:</strong> {event.available_seats} verfügbar</p>
-                    <button onClick={() => bookEvent(event._id)} className="book-button">Buchen</button>
+                    <p>
+                      <strong>Plätze:</strong> {event.available_seats} verfügbar
+                    </p>
+                    <button
+                      onClick={() => bookEvent(event._id)}
+                      className="book-button"
+                    >
+                      Buchen
+                    </button>
                   </div>
                 </div>
               ))}
