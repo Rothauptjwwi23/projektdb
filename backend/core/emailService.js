@@ -1,7 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config(); // ⬅️ das ist entscheidend
+
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail", // oder z. B. "Outlook", "Yahoo", SMTP-Host etc.
+  service: "gmail",
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -10,7 +13,7 @@ const transporter = nodemailer.createTransport({
 
 export const sendBookingConfirmation = async (email, event) => {
   await transporter.sendMail({
-    from: '"EventBooker" <no-reply@eventbooker.com>',
+    from: `"EventBooker" <${process.env.SMTP_USER}>`,
     to: email,
     subject: `Buchungsbestätigung: ${event.title}`,
     html: `
