@@ -93,21 +93,35 @@ export default function Home() {
   };
 
   async function bookEvent(eventId: string) {
+    const user = localStorage.getItem("user");
+    const token = user ? JSON.parse(user).token : null;
+
+    if (!token) {
+      alert("Bitte melde dich an, um Events zu buchen.");
+      return;
+    }
+
     try {
-      const response = await fetch("http://127.0.0.1:3001/events/book", {
+      const response = await fetch("http://127.0.0.1:3001/bookings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ event_id: eventId, seats: 1 }),
       });
+
       const data = await response.json();
-      if (data.message === "Buchung erfolgreich!") {
+
+      if (response.ok) {
         alert("Buchung erfolgreich!");
         fetchEvents();
       } else {
         alert(data.error);
       }
-    } catch (error) {
-      console.error("Fehler beim Buchen des Events:", error);
+    } catch (err) {
+      console.error("Fehler beim Buchen:", err);
+      alert("Buchung fehlgeschlagen");
     }
   }
 
@@ -151,7 +165,6 @@ export default function Home() {
                 <input id="location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ort des Events" required />
               </div>
 
-              {/* NEU: Kategorie Dropdown */}
               <div className="form-group">
                 <label htmlFor="type">Kategorie</label>
                 <select id="type" value={type} onChange={(e) => setType(e.target.value)} required>

@@ -1,13 +1,10 @@
 import nano from "nano";
+import { getDatabase } from "./db.js";
 
-// ✅ CouchDB-Verbindung mit Zugangsdaten
 const couchDBUrl = "http://admin:passwort1234@127.0.0.1:5984";
 const couch = nano(couchDBUrl);
-
-// ✅ Definiere die "events"-Datenbank
 const eventDB = couch.use("events");
 
-// 🛠 Datenbank erstellen (falls nicht vorhanden)
 async function initializeDatabases() {
   try {
     const dbs = await couch.db.list();
@@ -19,8 +16,6 @@ async function initializeDatabases() {
     console.error(`❌ Fehler beim Erstellen der Datenbank: ${err.message}`);
   }
 }
-
-// **Datenbank beim Start initialisieren**
 initializeDatabases();
 
 export const getEvents = async () => {
@@ -29,59 +24,41 @@ export const getEvents = async () => {
 };
 
 export const addEvent = async (eventData) => {
-  try {
-    const requiredFields = [
-      "title",
-      "capacity",
-      "date",
-      "location",
-      "type", // ✅ ebenfalls auf "type" geändert
-      "short_description",
-      "long_description"
-    ];
-
-    for (const field of requiredFields) {
-      if (
-        !eventData[field] ||
-        (typeof eventData[field] === "string" && eventData[field].trim() === "")
-      ) {
-        throw new Error(`Feld "${field}" darf nicht leer sein.`);
-      }
+  const requiredFields = ["title", "capacity", "date", "location", "type", "short_description", "long_description"];
+  for (const field of requiredFields) {
+    if (!eventData[field] || (typeof eventData[field] === "string" && eventData[field].trim() === "")) {
+      throw new Error(`Feld "${field}" darf nicht leer sein.`);
     }
-
-    const newEvent = {
-      title: eventData.title,
-      capacity: eventData.capacity,
-      available_seats: eventData.available_seats ?? eventData.capacity,
-      date: eventData.date,
-      location: eventData.location,
-      type: eventData.type,
-      short_description: eventData.short_description,
-      long_description: eventData.long_description,
-      tags: eventData.tags || [],
-    };
-
-    const response = await eventDB.insert(newEvent);
-    return response;
-  } catch (err) {
-    throw err;
   }
+
+  const newEvent = {
+    title: eventData.title,
+    capacity: eventData.capacity,
+    available_seats: eventData.available_seats ?? eventData.capacity,
+    date: eventData.date,
+    location: eventData.location,
+    type: eventData.type,
+    short_description: eventData.short_description,
+    long_description: eventData.long_description,
+    tags: eventData.tags || [],
+  };
+
+  const response = await eventDB.insert(newEvent);
+  return response;
 };
 
-// ✅ Buchungsfunktion: available_seats aktualisieren
-export const bookEvent = async (eventId) => {
+export const bookEvent = async (eventId, seats = 1) => {
   try {
     const event = await eventDB.get(eventId);
-
-    if (event.available_seats > 0) {
-      event.available_seats -= 1;
+    if (event.available_seats >= seats) {
+      event.available_seats -= seats;
       await eventDB.insert(event);
-      return { success: true, message: "Buchung erfolgreich!", updatedEvent: event };
+      return { success: true, updatedEvent: event };
     } else {
-      return { success: false, error: "Keine freien Plätze mehr verfügbar!" };
+      return { success: false, error: "Nicht genügend freie Plätze" };
     }
   } catch (err) {
-    console.error(`❌ Fehler beim Buchen des Events: ${err.message}`);
-    return { success: false, error: "Fehler beim Buchen des Events!" };
+    console.error(`❌ Fehler beim Buchen: ${err.message}`);
+    return { success: false, error: "Interner Fehler" };
   }
 };

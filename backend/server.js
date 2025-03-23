@@ -1,26 +1,19 @@
-// server.js
-import Fastify from 'fastify'; // Verwenden von import
-import cors from '@fastify/cors'; // Verwenden von import
-import eventRoutes from './roots/eventRoutes.js'; // Importiere die eventRoutes
+import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import eventRoutes from './roots/eventRoutes.js';
+import bookingRoutes from './roots/bookingRoutes.js';
 
 const fastify = Fastify({ logger: true });
 
-// CORS aktivieren
-import FastifyCors from "@fastify/cors";
-
-fastify.register(FastifyCors, {
-  origin: "*", 
-  methods: ["GET", "POST", "OPTIONS"], // OPTIONS hinzufügen!
-  allowedHeaders: ["Content-Type"],
+fastify.register(cors, {
+  origin: "*",
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 });
 
-
-
-
-// **Route für Events registrieren**
 fastify.register(eventRoutes);
+fastify.register(bookingRoutes);
 
-// Server starten
 const startServer = async () => {
   try {
     await fastify.listen({ port: 3001, host: "0.0.0.0" });
@@ -31,5 +24,4 @@ const startServer = async () => {
   }
 };
 
-// Starte den Server
 startServer();

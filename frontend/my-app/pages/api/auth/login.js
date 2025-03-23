@@ -1,3 +1,5 @@
+// Pfad: frontend/my-app/pages/api/auth/login.js
+
 import userStore from '@/lib/userStore';
 
 export default async function handler(req, res) {
@@ -7,20 +9,18 @@ export default async function handler(req, res) {
 
   try {
     const { email, password } = req.body;
-    
-    // Validate input
+
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
-    
-    // Authenticate user
+
     const user = await userStore.authenticateUser(email, password);
-    
+
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    
-    return res.status(200).json({ 
+
+    return res.status(200).json({
       message: 'Login successful',
       user: {
         _id: user._id,
