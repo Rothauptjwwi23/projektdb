@@ -1,6 +1,9 @@
 // Pfad: frontend/my-app/pages/api/auth/login.js
 
 import userStore from '@/lib/userStore';
+import jwt from 'jsonwebtoken'; // ⬅️ Token-Generierung hinzugefügt
+
+const SECRET = "Geheim_Key_1234"; // ⬅️ Gleicher Key wie im Backend
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -20,13 +23,18 @@ export default async function handler(req, res) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    // ⬇️ Token generieren
+    const token = jwt.sign({ user }, SECRET, { expiresIn: "1h" });
+
+    // ⬇️ Token wird mit dem User-Objekt zurückgegeben
     return res.status(200).json({
       message: 'Login successful',
       user: {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        token // ⬅️ wichtig für späteren Zugriff!
       }
     });
   } catch (error) {
