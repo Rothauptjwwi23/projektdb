@@ -1,5 +1,7 @@
+// Pfad: my-app/backend/roots/eventRoutes.js
+
 import { getEvents, addEvent, bookEvent, getEventById } from "../core/eventStore.js";
-import { sendBookingConfirmation } from "../core/emailService.js"; // ✉️ Mail-Service importieren
+import { getBookingsByUser } from "../core/bookingStore.js";
 import jwt from "jsonwebtoken";
 
 const checkAdminRole = async (request, reply, done) => {
@@ -92,47 +94,44 @@ export default async function eventRoutes(fastify, options) {
     }
   });
 
-  // Buchung eines Events + Bestätigungsmail ✉️
+  // Buchung eines Events
   fastify.post("/events/book", async (request, reply) => {
     const { eventId } = request.body;
     if (!eventId) {
       return reply.status(400).send({ error: "Event ID erforderlich!" });
     }
-
     try {
       const result = await bookEvent(eventId);
-      if (!result.success) {
-        return reply.status(400).send({ error: result.error });
-      }
-
-      const userHeader = request.headers.authorization;
-      if (userHeader) {
-        const token = userHeader.split(" ")[1];
-        const decoded = jwt.verify(token, "Geheim_Key_1234");
-        const userEmail = decoded?.user?.email;
-
-        console.log("🔐 JWT dekodiert:", decoded);
-        console.log("📨 E-Mail aus Token:", userEmail);
-
-        if (userEmail) {
-          try {
-            await sendBookingConfirmation(userEmail, result.updatedEvent);
-            console.log("✅ Bestätigungsmail versendet an:", userEmail);
-          } catch (err) {
-            console.error("❌ Fehler beim Senden der Buchungsbestätigung:", err.message);
-          }
-        }
+      if (result.success) {
+        reply.send({
+          message: "Buchung erfolgreich! Ihnen wurde eine Bestätigungsmail geschickt.",
+          updatedEvent: result.updatedEvent,
+        });
       } else {
-        console.warn("⚠️ Kein Authorization-Header vorhanden. Keine Mail versendet.");
+        reply.status(400).send({ error: result.error });
+      }
+    } catch (error) {
+      reply.status(500).send({ error: "Fehler beim Buchen des Events" });
+    }
+  });
+
+  // Buchungen eines Nutzers abrufen
+  fastify.get("/bookings/me", async (request, reply) => {
+    try {
+      const authHeader = request.headers.authorization;
+      if (!authHeader) {
+        return reply.status(401).send({ error: "Kein Token mitgesendet" });
       }
 
-      reply.send({
-        message: "Buchung erfolgreich! Ihnen wurde eine Bestätigungsmail geschickt.",
-        updatedEvent: result.updatedEvent,
-      });
+      const token = authHeader.split(" ")[1];
+      const decoded = jwt.verify(token, "Geheim_Key_1234");
+      const userId = decoded.user._id;
+
+      const bookings = await getBookingsByUser(userId);
+      reply.send({ bookings });
     } catch (error) {
-      console.error("❌ Fehler bei Buchung:", error);
-      reply.status(500).send({ error: "Fehler beim Buchen des Events" });
+      console.error("Fehler beim Abrufen der Buchungen:", error);
+      reply.status(500).send({ error: "Fehler beim Abrufen der Buchungen" });
     }
   });
 }
