@@ -98,7 +98,7 @@ export default async function eventRoutes(fastify, options) {
   fastify.post("/events/book", async (request, reply) => {
     const { eventId } = request.body;
     if (!eventId) {
-      return reply.status(400).send({ error: "Event ID erforderlich!" });
+      return reply.status(400).send({ error: "Event ist ID erforderlich!" });
     }
     try {
       const result = await bookEvent(eventId);
