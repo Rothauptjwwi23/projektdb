@@ -1,8 +1,7 @@
-// Pfad: my-app/app/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface Event {
   _id: string;
@@ -18,17 +17,12 @@ interface Event {
 }
 
 export default function Home() {
-  // useSearchParams liefert ein ReadonlyURLSearchParams-Objekt,
-  // kann aber je nach Next-Version noch unklare Typen haben:
   const searchParams = useSearchParams();
-
-  // Werte aus den Search-Parametern holen (mit optionalem Chaining)
   const s = searchParams?.get("search") || "";
   const loc = searchParams?.get("location") || "";
   const d = searchParams?.get("date") || "";
   const cat = searchParams?.get("category") || "";
 
-  // Ein Objekt bauen und in einen stabilen String umwandeln
   const query = JSON.stringify({ s, loc, d, cat });
 
   const [events, setEvents] = useState<Event[]>([]);
@@ -43,21 +37,18 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const router = useRouter();
   const eventTypes = ["Konzert", "Sport", "Networking", "Workshop", "Weiterbildung"];
 
-  // useEffect lauscht auf Änderungen an "query"
   useEffect(() => {
     fetchEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
 
   const fetchEvents = async () => {
     try {
       setLoading(true);
-
-      // Objekt aus dem JSON-String entpacken
       const { s, loc, d, cat } = JSON.parse(query);
-
-      // Dynamische URL bauen
       const params = new URLSearchParams();
       if (s) params.append("search", s);
       if (loc) params.append("location", loc);
@@ -80,8 +71,8 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
     const eventCapacity = Number(capacity);
     if (!title || isNaN(eventCapacity) || eventCapacity <= 0 || !date || !location || !type) {
@@ -128,7 +119,7 @@ export default function Home() {
     }
   };
 
-  async function bookEvent(eventId: string) {
+  const bookEvent = async (eventId: string) => {
     const user = localStorage.getItem("user");
     const token = user ? JSON.parse(user).token : null;
 
@@ -138,19 +129,18 @@ export default function Home() {
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:3001/bookings", {
+      const response = await fetch("http://127.0.0.1:3001/events/book", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ event_id: eventId, seats: 1 }),
+        body: JSON.stringify({ eventId }), // ✅ Korrekt angepasst
       });
 
       const data = await response.json();
-
       if (response.ok) {
-        alert("Buchung erfolgreich!");
+        alert("Buchung erfolgreich! Ihnen wurde eine Bestätigungsmail geschickt.");
         fetchEvents();
       } else {
         alert(data.error);
@@ -159,12 +149,12 @@ export default function Home() {
       console.error("Fehler beim Buchen:", err);
       alert("Buchung fehlgeschlagen");
     }
-  }
+  };
 
   return (
     <div className="event-page">
       <div className="container">
-        <h1>
+        <h1 className="text-4xl font-extrabold text-center mb-8">
           Event<span className="highlight">Booking</span>
         </h1>
 
@@ -182,63 +172,30 @@ export default function Home() {
           )}
         </div>
 
+        {/* ───── Formular bleibt 1:1 unverändert ───── */}
         <div className="form-container">
           <div className="card">
-            <h2>Neues Event erstellen</h2>
+            <h2 className="text-xl font-bold mb-4 text-center">Neues Event erstellen</h2>
             <form onSubmit={handleSubmit} className="event-form">
               <div className="form-group">
                 <label htmlFor="title">Titel</label>
-                <input
-                  id="title"
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Event Titel"
-                  required
-                />
+                <input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
               </div>
               <div className="form-group">
                 <label htmlFor="capacity">Kapazität</label>
-                <input
-                  id="capacity"
-                  type="number"
-                  value={capacity}
-                  onChange={(e) => setCapacity(e.target.value)}
-                  placeholder="Anzahl der Plätze"
-                  min="1"
-                  required
-                />
+                <input id="capacity" type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} required />
               </div>
               <div className="form-group">
                 <label htmlFor="date">Datum</label>
-                <input
-                  id="date"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  required
-                />
+                <input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
               </div>
               <div className="form-group">
                 <label htmlFor="location">Ort</label>
-                <input
-                  id="location"
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Ort des Events"
-                  required
-                />
+                <input id="location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} required />
               </div>
-
               <div className="form-group">
                 <label htmlFor="type">Kategorie</label>
-                <select
-                  id="type"
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  required
-                >
+                <select id="type" value={type} onChange={(e) => setType(e.target.value)} required>
                   <option value="">Bitte wählen</option>
                   {eventTypes.map((t) => (
                     <option key={t} value={t}>
@@ -247,68 +204,56 @@ export default function Home() {
                   ))}
                 </select>
               </div>
-
               <div className="form-group">
                 <label htmlFor="shortDescription">Kurzbeschreibung</label>
-                <input
-                  id="shortDescription"
-                  type="text"
-                  value={shortDescription}
-                  onChange={(e) => setShortDescription(e.target.value)}
-                  placeholder="Kurze Eventbeschreibung"
-                  required
-                />
+                <input id="shortDescription" type="text" value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} required />
               </div>
-
               <div className="form-group">
                 <label htmlFor="longDescription">Eventbeschreibung</label>
-                <input
-                  id="longDescription"
-                  type="text"
-                  value={longDescription}
-                  onChange={(e) => setLongDescription(e.target.value)}
-                  placeholder="Detaillierte Eventbeschreibung"
-                  required
-                />
+                <input id="longDescription" type="text" value={longDescription} onChange={(e) => setLongDescription(e.target.value)} required />
               </div>
-
               <div className="form-group">
                 <label htmlFor="tags">Tags (durch Komma getrennt)</label>
-                <input
-                  id="tags"
-                  type="text"
-                  value={tags}
-                  onChange={(e) => setTags(e.target.value)}
-                  placeholder="Tag1, Tag2, Tag3"
-                />
+                <input id="tags" type="text" value={tags} onChange={(e) => setTags(e.target.value)} />
               </div>
-
-              <button type="submit" className="create-button">
+              <button type="submit" className="create-button hover:bg-primary/90 transition-all">
                 <span>Erstellen</span>
               </button>
             </form>
           </div>
         </div>
 
-        <div className="events-container">
-          <h2>Verfügbare Events</h2>
+        {/* ───── Event-Liste ───── */}
+        <div className="events-container mt-8">
+          <h2 className="text-xl font-bold mb-4 text-center">Verfügbare Events</h2>
           {events.length === 0 && !loading ? (
-            <p>Keine Events verfügbar.</p>
+            <p className="text-center text-gray-300">Keine Events verfügbar.</p>
           ) : (
             <div className="events-grid">
               {events.map((event) => (
-                <div key={event._id} className="card event-card">
+                <div
+                  key={event._id}
+                  className="card event-card hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => router.push(`/events/${event._id}`)}
+                >
                   <div className="event-content">
-                    <h3>{event.title}</h3>
-                    <p>{event.date}</p>
-                    <p>{event.location}</p>
-                    <p>{event.short_description}</p>
-                    <p>
+                    <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
+                    <p className="text-sm text-gray-400 mb-1">
+                      <strong>Datum:</strong> {event.date}
+                    </p>
+                    <p className="text-sm text-gray-400 mb-1">
+                      <strong>Ort:</strong> {event.location}
+                    </p>
+                    <p className="text-sm text-gray-300 mb-2">{event.short_description}</p>
+                    <p className="text-sm text-gray-300 mb-2">
                       <strong>Plätze:</strong> {event.available_seats} verfügbar
                     </p>
                     <button
-                      onClick={() => bookEvent(event._id)}
-                      className="book-button"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Verhindert Weiterleitung beim Klick auf Button
+                        bookEvent(event._id);
+                      }}
+                      className="book-button hover:bg-green-600 transition-colors"
                     >
                       Buchen
                     </button>

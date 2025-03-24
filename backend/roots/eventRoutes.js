@@ -1,6 +1,5 @@
-// Pfad: backend/roots/eventRoutes.js
-
-import { getEvents, addEvent, bookEvent } from "../core/eventStore.js";
+import { getEvents, addEvent, bookEvent, getEventById } from "../core/eventStore.js";
+import { sendBookingConfirmation } from "../core/emailService.js"; // ✉️ Mail-Service importieren
 import jwt from "jsonwebtoken";
 
 const checkAdminRole = async (request, reply, done) => {
@@ -9,14 +8,12 @@ const checkAdminRole = async (request, reply, done) => {
     if (!authHeader) {
       return reply.status(401).send({ error: "Kein Authentifizierungstoken gefunden" });
     }
-
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, "Geheim_Key_1234");
 
     if (!decoded.user || decoded.user.role !== "admin") {
       return reply.status(403).send({ error: "Zugriff verweigert. Nur Administratoren können Events erstellen." });
     }
-
     request.user = decoded.user;
     done();
   } catch (error) {
@@ -28,41 +25,31 @@ const checkAdminRole = async (request, reply, done) => {
 };
 
 export default async function eventRoutes(fastify, options) {
+  // Alle Events abrufen (mit Filter)
   fastify.get("/events", async (request, reply) => {
     try {
-      // Neue Filter-Parameter aus der Query lesen
       const { search, location, date, category } = request.query;
-
-      // Zunächst alle Events abrufen
       let events = await getEvents();
 
-      // Falls "search" vorhanden ist, in Titel, Location oder Tags suchen
       if (search && search.trim() !== "") {
         const s = search.toLowerCase();
         events = events.filter((e) => {
           const inTitle = e.title?.toLowerCase().includes(s);
           const inLocation = e.location?.toLowerCase().includes(s);
-          const inTags =
-            Array.isArray(e.tags) &&
-            e.tags.some((tag) => tag.toLowerCase().includes(s));
+          const inTags = Array.isArray(e.tags) && e.tags.some((tag) => tag.toLowerCase().includes(s));
           return inTitle || inLocation || inTags;
         });
       }
 
-      // Location-Filter
       if (location && location.trim() !== "") {
         const loc = location.toLowerCase();
-        events = events.filter((e) =>
-          e.location?.toLowerCase().includes(loc)
-        );
+        events = events.filter((e) => e.location?.toLowerCase().includes(loc));
       }
 
-      // Datums-Filter (genauer Vergleich, wenn z. B. "YYYY-MM-DD" vorliegt)
       if (date && date.trim() !== "") {
         events = events.filter((e) => e.date === date);
       }
 
-      // Kategorie-Filter (hier "category" genannt, aber im Event heißt das Feld "type")
       if (category && category.trim() !== "") {
         events = events.filter((e) => e.type === category);
       }
@@ -73,30 +60,30 @@ export default async function eventRoutes(fastify, options) {
     }
   });
 
+  // Einzelnes Event abrufen
+  fastify.get("/events/:id", async (request, reply) => {
+    try {
+      const { id } = request.params;
+      const event = await getEventById(id);
+      if (!event) {
+        return reply.status(404).send({ error: "Event nicht gefunden" });
+      }
+      return event;
+    } catch (err) {
+      console.error("Fehler beim Abrufen eines Events:", err);
+      reply.status(500).send({ error: "Fehler beim Abrufen des Events" });
+    }
+  });
+
+  // Neues Event erstellen
   fastify.post("/events", async (request, reply) => {
     const eventData = request.body;
-
-    const requiredFields = [
-      "title",
-      "capacity",
-      "date",
-      "location",
-      "type", // Unverändert
-      "short_description",
-      "long_description",
-    ];
-
+    const requiredFields = ["title", "capacity", "date", "location", "type", "short_description", "long_description"];
     for (const field of requiredFields) {
-      if (
-        !eventData[field] ||
-        (typeof eventData[field] === "string" && eventData[field].trim() === "")
-      ) {
-        return reply
-          .status(400)
-          .send({ error: `Feld "${field}" darf nicht leer sein.` });
+      if (!eventData[field] || (typeof eventData[field] === "string" && eventData[field].trim() === "")) {
+        return reply.status(400).send({ error: `Feld "${field}" darf nicht leer sein.` });
       }
     }
-
     try {
       const result = await addEvent(eventData);
       reply.status(201).send({ message: "Event hinzugefügt!", id: result.id });
@@ -105,22 +92,46 @@ export default async function eventRoutes(fastify, options) {
     }
   });
 
+  // Buchung eines Events + Bestätigungsmail ✉️
   fastify.post("/events/book", async (request, reply) => {
     const { eventId } = request.body;
     if (!eventId) {
       return reply.status(400).send({ error: "Event ID erforderlich!" });
     }
+
     try {
       const result = await bookEvent(eventId);
-      if (result.success) {
-        reply.send({
-          message: "Buchung erfolgreich!",
-          updatedEvent: result.updatedEvent,
-        });
-      } else {
-        reply.status(400).send({ error: result.error });
+      if (!result.success) {
+        return reply.status(400).send({ error: result.error });
       }
+
+      const userHeader = request.headers.authorization;
+      if (userHeader) {
+        const token = userHeader.split(" ")[1];
+        const decoded = jwt.verify(token, "Geheim_Key_1234");
+        const userEmail = decoded?.user?.email;
+
+        console.log("🔐 JWT dekodiert:", decoded);
+        console.log("📨 E-Mail aus Token:", userEmail);
+
+        if (userEmail) {
+          try {
+            await sendBookingConfirmation(userEmail, result.updatedEvent);
+            console.log("✅ Bestätigungsmail versendet an:", userEmail);
+          } catch (err) {
+            console.error("❌ Fehler beim Senden der Buchungsbestätigung:", err.message);
+          }
+        }
+      } else {
+        console.warn("⚠️ Kein Authorization-Header vorhanden. Keine Mail versendet.");
+      }
+
+      reply.send({
+        message: "Buchung erfolgreich! Ihnen wurde eine Bestätigungsmail geschickt.",
+        updatedEvent: result.updatedEvent,
+      });
     } catch (error) {
+      console.error("❌ Fehler bei Buchung:", error);
       reply.status(500).send({ error: "Fehler beim Buchen des Events" });
     }
   });

@@ -492,3 +492,19 @@ select option:focus {
 .event-details p {
   margin: 0;
 }
+.badge {
+  display: inline-block;
+  background-color: var(--primary);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  margin: 0.25rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.badge:hover {
+  background-color: var(--secondary);
+}

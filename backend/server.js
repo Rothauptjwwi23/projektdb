@@ -3,13 +3,10 @@ import dotenv from "dotenv";
 dotenv.config();
 console.log("📦 SMTP_USER:", process.env.SMTP_USER);
 console.log("📦 SMTP_PASS:", process.env.SMTP_PASS ? "✅ vorhanden" : "❌ fehlt");
-console.log("📦 SMTP_USER:", process.env.SMTP_USER);
-
 
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import eventRoutes from './roots/eventRoutes.js';
-import bookingRoutes from './roots/bookingRoutes.js';
 
 const fastify = Fastify({ logger: true });
 
@@ -19,8 +16,7 @@ fastify.register(cors, {
   allowedHeaders: ["Content-Type", "Authorization"],
 });
 
-fastify.register(eventRoutes);
-fastify.register(bookingRoutes);
+fastify.register(eventRoutes); // Nur eventRoutes nutzen, bookingRoutes entfernen
 
 const startServer = async () => {
   try {
