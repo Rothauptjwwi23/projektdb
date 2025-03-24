@@ -26,19 +26,10 @@ export default function Home() {
   const query = JSON.stringify({ s, loc, d, cat });
 
   const [events, setEvents] = useState<Event[]>([]);
-  const [title, setTitle] = useState("");
-  const [capacity, setCapacity] = useState("");
-  const [date, setDate] = useState("");
-  const [location, setLocation] = useState("");
-  const [type, setType] = useState("");
-  const [shortDescription, setShortDescription] = useState("");
-  const [longDescription, setLongDescription] = useState("");
-  const [tags, setTags] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
-  const eventTypes = ["Konzert", "Sport", "Networking", "Workshop", "Weiterbildung"];
 
   useEffect(() => {
     fetchEvents();
@@ -71,54 +62,6 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const eventCapacity = Number(capacity);
-    if (!title || isNaN(eventCapacity) || eventCapacity <= 0 || !date || !location || !type) {
-      alert("Bitte fülle alle erforderlichen Felder aus.");
-      return;
-    }
-
-    const eventData = {
-      title,
-      capacity: eventCapacity,
-      date,
-      location,
-      type,
-      short_description: shortDescription,
-      long_description: longDescription,
-      tags: tags.split(",").map((tag) => tag.trim()),
-    };
-
-    try {
-      const response = await fetch("http://127.0.0.1:3001/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(eventData),
-      });
-
-      if (!response.ok) throw new Error("Fehler beim Speichern der Daten");
-
-      const result = await response.json();
-      setEvents((prevEvents) => [
-        ...prevEvents,
-        { ...eventData, _id: result.id, available_seats: eventCapacity },
-      ]);
-      setTitle("");
-      setCapacity("");
-      setDate("");
-      setLocation("");
-      setType("");
-      setShortDescription("");
-      setLongDescription("");
-      setTags("");
-      alert("Event erfolgreich hinzugefügt!");
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Unbekannter Fehler");
-    }
-  };
-
   const bookEvent = async (eventId: string) => {
     const user = localStorage.getItem("user");
     const token = user ? JSON.parse(user).token : null;
@@ -135,7 +78,7 @@ export default function Home() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ eventId }), // ✅ Korrekt angepasst
+        body: JSON.stringify({ eventId }),
       });
 
       const data = await response.json();
@@ -172,58 +115,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* ───── Formular bleibt 1:1 unverändert ───── */}
-        <div className="form-container">
-          <div className="card">
-            <h2 className="text-xl font-bold mb-4 text-center">Neues Event erstellen</h2>
-            <form onSubmit={handleSubmit} className="event-form">
-              <div className="form-group">
-                <label htmlFor="title">Titel</label>
-                <input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label htmlFor="capacity">Kapazität</label>
-                <input id="capacity" type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label htmlFor="date">Datum</label>
-                <input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label htmlFor="location">Ort</label>
-                <input id="location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label htmlFor="type">Kategorie</label>
-                <select id="type" value={type} onChange={(e) => setType(e.target.value)} required>
-                  <option value="">Bitte wählen</option>
-                  {eventTypes.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="shortDescription">Kurzbeschreibung</label>
-                <input id="shortDescription" type="text" value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label htmlFor="longDescription">Eventbeschreibung</label>
-                <input id="longDescription" type="text" value={longDescription} onChange={(e) => setLongDescription(e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label htmlFor="tags">Tags (durch Komma getrennt)</label>
-                <input id="tags" type="text" value={tags} onChange={(e) => setTags(e.target.value)} />
-              </div>
-              <button type="submit" className="create-button hover:bg-primary/90 transition-all">
-                <span>Erstellen</span>
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* ───── Event-Liste ───── */}
+        {/* ───── Nur die Event-Liste bleibt ───── */}
         <div className="events-container mt-8">
           <h2 className="text-xl font-bold mb-4 text-center">Verfügbare Events</h2>
           {events.length === 0 && !loading ? (
@@ -250,7 +142,7 @@ export default function Home() {
                     </p>
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // Verhindert Weiterleitung beim Klick auf Button
+                        e.stopPropagation();
                         bookEvent(event._id);
                       }}
                       className="book-button hover:bg-green-600 transition-colors"

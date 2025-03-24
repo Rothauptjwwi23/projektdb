@@ -1,22 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-interface Event {
-  _id: string;
-  title: string;
-  capacity: number;
-  available_seats: number;
-  date: string;
-  location: string;
-  type: string;
-  short_description: string;
-  long_description: string;
-  tags: string[];
-}
+import { useState } from "react";
 
 export default function Home() {
-  const [events, setEvents] = useState<Event[]>([]);
   const [title, setTitle] = useState("");
   const [capacity, setCapacity] = useState("");
   const [date, setDate] = useState("");
@@ -25,27 +11,9 @@ export default function Home() {
   const [shortDescription, setShortDescription] = useState("");
   const [longDescription, setLongDescription] = useState("");
   const [tags, setTags] = useState("");
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const eventTypes = ["Konzert", "Sport", "Networking", "Workshop", "Weiterbildung"];
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:3001/events");
-      if (!response.ok) throw new Error("Fehler beim Abrufen der Events");
-      const data = await response.json();
-      setEvents(data.events);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Unbekannter Fehler");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -93,8 +61,7 @@ export default function Home() {
 
       if (!response.ok) throw new Error("Fehler beim Speichern der Daten");
 
-      const result = await response.json();
-      setEvents((prevEvents) => [...prevEvents, { ...eventData, _id: result.id }]);
+      alert("Event erfolgreich hinzugefügt!");
       setTitle("");
       setCapacity("");
       setDate("");
@@ -103,30 +70,10 @@ export default function Home() {
       setShortDescription("");
       setLongDescription("");
       setTags("");
-      alert("Event erfolgreich hinzugefügt!");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Unbekannter Fehler");
     }
   };
-
-  async function bookEvent(eventId: string) {
-    try {
-      const response = await fetch("http://127.0.0.1:3001/events/book", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId }),
-      });
-      const data = await response.json();
-      if (data.message === "Buchung erfolgreich!") {
-        alert("Buchung erfolgreich!");
-        fetchEvents();
-      } else {
-        alert(data.error);
-      }
-    } catch (error) {
-      console.error("Fehler beim Buchen des Events:", error);
-    }
-  }
 
   return (
     <div className="event-page">
@@ -135,19 +82,11 @@ export default function Home() {
           Event<span className="highlight">Booking</span>
         </h1>
 
-        <div className="status-container">
-          {loading && (
-            <div className="loading-indicator">
-              <div className="spinner"></div>
-              <span>Lädt...</span>
-            </div>
-          )}
-          {error && (
-            <div className="error-message">
-              <p>{error}</p>
-            </div>
-          )}
-        </div>
+        {error && (
+          <div className="error-message">
+            <p>{error}</p>
+          </div>
+        )}
 
         <div className="form-container">
           <div className="card">
@@ -197,29 +136,6 @@ export default function Home() {
               </button>
             </form>
           </div>
-        </div>
-
-        <div className="events-container">
-          <h2>Verfügbare Events</h2>
-          {events.length === 0 && !loading ? (
-            <p>Keine Events verfügbar.</p>
-          ) : (
-            <div className="events-grid">
-              {events.map((event) => (
-                <div key={event._id} className="card event-card">
-                  <div className="event-content">
-                    <h3>{event.title}</h3>
-                    <p>{event.date}</p>
-                    <p>{event.location}</p>
-                    <p>{event.short_description}</p>
-                    <p>
-                      <strong>Plätze:</strong> {event.available_seats} verfügbar
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>
