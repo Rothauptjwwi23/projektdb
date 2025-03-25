@@ -282,7 +282,7 @@ export default function Header() {
                     <line x1="8" y1="2" x2="8" y2="6"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                   </svg>
-                  <span>Events</span>
+                  <span>Events hinzufügen</span>
                 </Link>
               </li>
               <li>
@@ -420,7 +420,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Filter-Dropdown */}
+        {/* Filter-Dropdown - KOMPAKTE VERSION */}
         <AnimatePresence>
           {filtersVisible && (
             <motion.div
@@ -428,17 +428,13 @@ export default function Header() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              /* 
-                ⬇️ HIER: kleiner gemacht (breiter war z.B. w-80), 
-                Padding reduziert, Schrift verkleinert 
-              */
-              className="filter-container absolute right-4 mt-1 bg-card-bg backdrop-blur-md text-white p-3 rounded-md shadow-xl border border-gray-700/50 w-64 z-50 text-sm"
+              className="filter-container absolute right-4 mt-1 bg-card-bg backdrop-blur-md text-white p-2 rounded-md shadow-xl border border-gray-700/50 w-52 z-50 text-xs"
             >
-              <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+              <h3 className="text-xs font-semibold mb-1 flex items-center gap-1">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
+                  width="12"
+                  height="12"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -452,32 +448,32 @@ export default function Header() {
                 Veranstaltungen filtern
               </h3>
 
-              <div className="space-y-2">
+              <div className="grid grid-cols-1 gap-1">
                 <div className="form-group">
-                  <label className="text-xs text-gray-300 mb-1 block">Ort</label>
+                  <label className="text-xs text-gray-300 mb-0.5 block">Ort</label>
                   <input
                     type="text"
                     value={filters.location}
                     onChange={(e) => setFilters({ ...filters, location: e.target.value })}
                     placeholder="Ort eingeben"
-                    className="w-full bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded text-xs p-2"
+                    className="w-full bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded text-xs py-1 px-2 h-7"
                   />
                 </div>
                 <div className="form-group">
-                  <label className="text-xs text-gray-300 mb-1 block">Datum</label>
+                  <label className="text-xs text-gray-300 mb-0.5 block">Datum</label>
                   <input
                     type="date"
                     value={filters.date}
                     onChange={(e) => setFilters({ ...filters, date: e.target.value })}
-                    className="w-full bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded text-xs p-2"
+                    className="w-full bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded text-xs py-1 px-2 h-7"
                   />
                 </div>
                 <div className="form-group">
-                  <label className="text-xs text-gray-300 mb-1 block">Kategorie</label>
+                  <label className="text-xs text-gray-300 mb-0.5 block">Kategorie</label>
                   <select
                     value={filters.category}
                     onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                    className="w-full bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded text-xs p-2"
+                    className="w-full bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded text-xs py-1 px-2 h-7"
                   >
                     <option value="">Alle Kategorien</option>
                     <option value="Sport">Sport</option>
@@ -487,22 +483,22 @@ export default function Header() {
                     <option value="Workshop">Workshop</option>
                   </select>
                 </div>
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-1 mt-1">
                   <input
                     type="text"
                     placeholder="Suchbegriff"
-                    className="flex-1 bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded text-xs p-2"
+                    className="flex-1 bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded text-xs py-1 px-2 h-7"
                     value={filters.keyword}
                     onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
                   />
                   <button
                     onClick={handleSearch}
-                    className="bg-primary hover:bg-primary/90 px-2 rounded flex items-center justify-center transition-all"
+                    className="bg-primary hover:bg-primary/90 w-7 h-7 rounded flex items-center justify-center transition-all"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
+                      width="12"
+                      height="12"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -524,7 +520,7 @@ export default function Header() {
       {/* Platzhalter, damit der Content nicht hinter dem Header verschwindet */}
       <div className="h-16"></div>
 
-      {/* Auth-Modal (Login / Registrieren) */}
+      {/* Auth-Modal (Login / Registrieren) - KOMPAKTE VERSION */}
       <AnimatePresence>
         {isAuthModalOpen && (
           <motion.div
@@ -542,12 +538,12 @@ export default function Header() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="bg-card-bg rounded-lg shadow-xl border border-gray-700/50 w-full max-w-md relative z-10 overflow-hidden"
+              className="bg-card-bg rounded-lg shadow-xl border border-gray-700/50 w-full max-w-sm relative z-10 overflow-hidden"
             >
               {/* Tabs oben */}
               <div className="flex border-b border-gray-700/50">
                 <button
-                  className={`flex-1 py-3 font-medium text-sm transition-colors ${
+                  className={`flex-1 py-2 font-medium text-sm transition-colors ${
                     activeTab === "login"
                       ? "text-white border-b-2 border-primary"
                       : "text-gray-400 hover:text-gray-200"
@@ -557,7 +553,7 @@ export default function Header() {
                   Login
                 </button>
                 <button
-                  className={`flex-1 py-3 font-medium text-sm transition-colors ${
+                  className={`flex-1 py-2 font-medium text-sm transition-colors ${
                     activeTab === "register"
                       ? "text-white border-b-2 border-primary"
                       : "text-gray-400 hover:text-gray-200"
@@ -568,12 +564,12 @@ export default function Header() {
                 </button>
                 <button
                   onClick={toggleAuthModal}
-                  className="absolute top-3 right-3 text-gray-400 hover:text-white transition-colors"
+                  className="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -589,20 +585,20 @@ export default function Header() {
 
               {/* Login-Form */}
               {activeTab === "login" && (
-                <div className="p-6">
-                  <h2 className="text-xl font-bold mb-6 text-white">Willkommen zurück</h2>
+                <div className="p-4">
+                  <h2 className="text-lg font-bold mb-3 text-white">Willkommen zurück</h2>
 
                   {loginError && (
-                    <div className="mb-4 p-3 bg-red-900/30 border-l-4 border-red-500 text-red-300 text-sm">
+                    <div className="mb-3 p-2 bg-red-900/30 border-l-4 border-red-500 text-red-300 text-xs">
                       {loginError}
                     </div>
                   )}
 
-                  <form onSubmit={handleLogin}>
-                    <div className="mb-4">
+                  <form onSubmit={handleLogin} className="flex flex-col items-center">
+                    <div className="mb-3 w-3/4">
                       <label
                         htmlFor="email"
-                        className="block text-gray-300 text-sm mb-2"
+                        className="block text-gray-300 text-xs mb-1"
                       >
                         Email
                       </label>
@@ -611,15 +607,15 @@ export default function Header() {
                         id="email"
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
-                        className="w-full p-3 bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded-md text-white"
+                        className="w-full p-2 text-sm bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded-md text-white"
                         required
                       />
                     </div>
-                    <div className="mb-6">
-                      <div className="flex justify-between items-center mb-2">
+                    <div className="mb-4 w-3/4">
+                      <div className="flex justify-between items-center mb-1">
                         <label
                           htmlFor="password"
-                          className="block text-gray-300 text-sm"
+                          className="block text-gray-300 text-xs"
                         >
                           Passwort
                         </label>
@@ -635,18 +631,18 @@ export default function Header() {
                         id="password"
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
-                        className="w-full p-3 bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded-md text-white"
+                        className="w-full p-2 text-sm bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded-md text-white"
                         required
                       />
                     </div>
                     <button
                       type="submit"
-                      className="w-full bg-primary hover:bg-secondary text-white py-3 px-4 rounded-md transition-colors font-medium shadow-md hover:shadow-primary/20"
+                      className="w-3/4 bg-primary hover:bg-secondary text-white py-2 px-4 text-sm rounded-md transition-colors font-medium shadow-md hover:shadow-primary/20"
                     >
                       Einloggen
                     </button>
                   </form>
-                  <div className="mt-6 text-center text-sm text-gray-400">
+                  <div className="mt-4 text-center text-xs text-gray-400">
                     Noch kein Konto?{" "}
                     <button
                       onClick={() => switchTab("register")}
@@ -660,24 +656,24 @@ export default function Header() {
 
               {/* Registrieren-Form */}
               {activeTab === "register" && (
-                <div className="p-6">
-                  <h2 className="text-xl font-bold mb-6 text-white">Erstelle ein Konto</h2>
+                <div className="p-4">
+                  <h2 className="text-lg font-bold mb-3 text-white">Erstelle ein Konto</h2>
 
                   {registerError && (
-                    <div className="mb-4 p-3 bg-red-900/30 border-l-4 border-red-500 text-red-300 text-sm">
+                    <div className="mb-3 p-2 bg-red-900/30 border-l-4 border-red-500 text-red-300 text-xs">
                       {registerError}
                     </div>
                   )}
                   {registerSuccess && (
-                    <div className="mb-4 p-3 bg-green-900/30 border-l-4 border-green-500 text-green-300 text-sm">
+                    <div className="mb-3 p-2 bg-green-900/30 border-l-4 border-green-500 text-green-300 text-xs">
                       {registerSuccess}
                     </div>
                   )}
-                  <form onSubmit={handleRegister}>
-                    <div className="mb-4">
+                  <form onSubmit={handleRegister} className="flex flex-col items-center">
+                    <div className="mb-3 w-3/4">
                       <label
                         htmlFor="name"
-                        className="block text-gray-300 text-sm mb-2"
+                        className="block text-gray-300 text-xs mb-1"
                       >
                         Name
                       </label>
@@ -686,14 +682,14 @@ export default function Header() {
                         id="name"
                         value={registerName}
                         onChange={(e) => setRegisterName(e.target.value)}
-                        className="w-full p-3 bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded-md text-white"
+                        className="w-full p-2 text-sm bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded-md text-white"
                         required
                       />
                     </div>
-                    <div className="mb-4">
+                    <div className="mb-3 w-3/4">
                       <label
                         htmlFor="registerEmail"
-                        className="block text-gray-300 text-sm mb-2"
+                        className="block text-gray-300 text-xs mb-1"
                       >
                         Email
                       </label>
@@ -702,14 +698,14 @@ export default function Header() {
                         id="registerEmail"
                         value={registerEmail}
                         onChange={(e) => setRegisterEmail(e.target.value)}
-                        className="w-full p-3 bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded-md text-white"
+                        className="w-full p-2 text-sm bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded-md text-white"
                         required
                       />
                     </div>
-                    <div className="mb-6">
+                    <div className="mb-4 w-3/4">
                       <label
                         htmlFor="registerPassword"
-                        className="block text-gray-300 text-sm mb-2"
+                        className="block text-gray-300 text-xs mb-1"
                       >
                         Passwort
                       </label>
@@ -718,32 +714,31 @@ export default function Header() {
                         id="registerPassword"
                         value={registerPassword}
                         onChange={(e) => setRegisterPassword(e.target.value)}
-                        className="w-full p-3 bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded-md text-white"
+                        className="w-full p-2 text-sm bg-gray-800/50 border border-gray-700/50 focus:border-primary rounded-md text-white"
                         required
                       />
                     </div>
                     <button
-                      type="submit"
-                      className="w-full bg-primary hover:bg-secondary text-white py-3 px-4 rounded-md transition-colors font-medium shadow-md hover:shadow-primary/20"
-                    >
-                      Registrieren
-                    </button>
-                  </form>
-                  <div className="mt-6 text-center text-sm text-gray-400">
-                    Bereits registriert?{" "}
-                    <button
-                      onClick={() => switchTab("login")}
-                      className="text-primary hover:text-secondary transition-colors font-medium"
-                    >
-                      Zum Login
-                    </button>
-                  </div>
+                    type="submit"
+                    className="w-3/4 bg-primary hover:bg-secondary text-white py-2 px-4 text-sm rounded-md transition-colors font-medium shadow-md hover:shadow-primary/20"
+                  >
+                    Registrieren
+                  </button>
+                </form>
+                <div className="mt-4 text-center text-xs text-gray-400">
+                  Bereits registriert?{" "}
+                  <button
+                    onClick={() => switchTab("login")}
+                    className="text-primary hover:text-secondary transition-colors font-medium">
+                    Zum Login
+                  </button>
                 </div>
-              )}
-            </motion.div>
+              </div>
+            )}
           </motion.div>
-        )}
-      </AnimatePresence>
-    </>
-  );
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </>
+);
 }

@@ -1,0 +1,64 @@
+version: '3.9'
+
+services:
+  couchdb1:
+    image: couchdb:3.3
+    container_name: couchdb1
+    ports:
+      - "5984:5984"
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=passwort1234
+    volumes:
+      - couchdb1_data:/opt/couchdb/data
+    networks:
+      - couchnet
+
+  couchdb2:
+    image: couchdb:3.3
+    container_name: couchdb2
+    ports:
+      - "5985:5984"
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=passwort1234
+    volumes:
+      - couchdb2_data:/opt/couchdb/data
+    networks:
+      - couchnet
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    container_name: event-backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "3001:3001"
+    depends_on:
+      - couchdb1
+    networks:
+      - couchnet
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: event-frontend
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - couchnet
+
+volumes:
+  couchdb1_data:
+  couchdb2_data:
+
+networks:
+  couchnet:
+    driver: bridge

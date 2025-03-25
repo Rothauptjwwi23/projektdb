@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function Home() {
+export default function AdminEventPage() {
+  const router = useRouter();
+
   const [title, setTitle] = useState("");
   const [capacity, setCapacity] = useState("");
   const [date, setDate] = useState("");
@@ -15,21 +18,25 @@ export default function Home() {
 
   const eventTypes = ["Konzert", "Sport", "Networking", "Workshop", "Weiterbildung"];
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  // 🔐 Nur Admin-Zugriff erlaubt
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      router.push("/");
+      return;
+    }
 
-    const eventCapacity = parseInt(capacity.trim(), 10);
+    const user = JSON.parse(userData);
+    if (user.role !== "admin") {
+      router.push("/");
+    }
+  }, []);
 
-    if (
-      !title.trim() ||
-      isNaN(eventCapacity) ||
-      eventCapacity <= 0 ||
-      !date ||
-      !location.trim() ||
-      !type.trim() ||
-      !shortDescription.trim() ||
-      !longDescription.trim()
-    ) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const eventCapacity = Number(capacity);
+    if (!title || isNaN(eventCapacity) || eventCapacity <= 0 || !date || !location || !type) {
       alert("Bitte fülle alle erforderlichen Felder aus.");
       return;
     }
@@ -78,7 +85,7 @@ export default function Home() {
   return (
     <div className="event-page">
       <div className="container">
-        <h1>
+        <h1 className="text-4xl font-extrabold text-center mb-8">
           Event<span className="highlight">Booking</span>
         </h1>
 
@@ -90,7 +97,7 @@ export default function Home() {
 
         <div className="form-container">
           <div className="card">
-            <h2>Neues Event erstellen</h2>
+            <h2 className="text-xl font-bold mb-4 text-center">Neues Event erstellen</h2>
             <form onSubmit={handleSubmit} className="event-form">
               <div className="form-group">
                 <label htmlFor="title">Titel</label>
@@ -98,7 +105,7 @@ export default function Home() {
               </div>
               <div className="form-group">
                 <label htmlFor="capacity">Kapazität</label>
-                <input id="capacity" type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} min="1" required />
+                <input id="capacity" type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} required />
               </div>
               <div className="form-group">
                 <label htmlFor="date">Datum</label>
@@ -131,7 +138,7 @@ export default function Home() {
                 <label htmlFor="tags">Tags (durch Komma getrennt)</label>
                 <input id="tags" type="text" value={tags} onChange={(e) => setTags(e.target.value)} />
               </div>
-              <button type="submit" className="create-button">
+              <button type="submit" className="create-button hover:bg-primary/90 transition-all">
                 <span>Erstellen</span>
               </button>
             </form>

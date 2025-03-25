@@ -508,3 +508,77 @@ select option:focus {
 .badge:hover {
   background-color: var(--secondary);
 }
+/* Compact Filter Styles - Add to globals.css */
+
+/* Make the filter container more compact */
+.filter-container {
+  width: 250px !important;
+  padding: 0.75rem !important;
+}
+
+/* Reduce spacing between form groups */
+.filter-container .form-group {
+  margin-bottom: 0.5rem !important;
+}
+
+/* Make the labels and inputs smaller */
+.filter-container label {
+  font-size: 0.7rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.filter-container input,
+.filter-container select {
+  padding: 0.35rem 0.5rem !important;
+  font-size: 0.75rem !important;
+  margin-bottom: 0 !important;
+  height: 1.8rem !important;
+}
+
+/* Make the heading smaller */
+.filter-container h3 {
+  font-size: 0.8rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Arrange filter options in a condensed layout */
+.filter-container .space-y-2 {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 0.5rem !important;
+}
+
+/* Make the search button row more compact */
+.filter-container .flex.gap-2 {
+  margin-top: 0.5rem !important;
+}
+
+.filter-container .flex.gap-2 input {
+  height: 1.8rem !important;
+}
+
+.filter-container .flex.gap-2 button {
+  height: 1.8rem !important;
+  width: 1.8rem !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Ensure filter is positioned properly */
+.filter-container {
+  right: 1rem !important;
+  top: 3.5rem !important;
+}
+
+/* Optional: Use a horizontal layout for wider screens */
+@media (min-width: 480px) {
+  .filter-container .space-y-2 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  
+  .filter-container .flex.gap-2 {
+    grid-column: span 2 !important;
+  }
+}
