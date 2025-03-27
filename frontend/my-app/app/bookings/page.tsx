@@ -31,30 +31,45 @@ export default function MyBookingsPage() {
   }, []);
 
   const fetchBookings = async () => {
-    const user = localStorage.getItem("user");
-    const token = user ? JSON.parse(user).token : null;
-
-    if (!token) {
-      setError("Du musst eingeloggt sein, um deine Buchungen zu sehen.");
-      return;
-    }
-
     try {
+      const storedUser = localStorage.getItem("user");
+      console.log("Stored user data:", storedUser); // Debug log
+
+      if (!storedUser) {
+        setError("Bitte melde dich an, um deine Buchungen zu sehen.");
+        return;
+      }
+
+      const userData = JSON.parse(storedUser);
+      if (!userData.token) {
+        setError("Ungültige Anmeldedaten. Bitte erneut einloggen.");
+        return;
+      }
+
       const res = await fetch("http://127.0.0.1:3001/bookings/me", {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${userData.token}`,
+          "Content-Type": "application/json",
         },
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        throw new Error(data.error || "Fehler beim Abrufen der Buchungen");
+        if (res.status === 401) {
+          localStorage.removeItem("user");
+          setError("Sitzung abgelaufen. Bitte erneut anmelden.");
+        } else {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Fehler beim Abrufen der Buchungen");
+        }
+        return;
       }
 
-      setBookings(data.bookings);
+      const data = await res.json();
+      console.log("Received bookings data:", data); // Debug log
+      setBookings(data.bookings || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unbekannter Fehler");
+      console.error("Booking fetch error:", err);
+      setError(err instanceof Error ? err.message : "Ein unerwarteter Fehler ist aufgetreten");
     }
   };
 

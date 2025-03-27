@@ -478,7 +478,7 @@ export default function Header() {
                     <option value="">Alle Kategorien</option>
                     <option value="Sport">Sport</option>
                     <option value="Weiterbildung">Weiterbildung</option>
-                    <option value="Concert">Konzert</option>
+                    <option value="Konzert">Konzert</option>
                     <option value="Networking">Networking</option>
                     <option value="Workshop">Workshop</option>
                   </select>

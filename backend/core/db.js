@@ -1,57 +1,63 @@
 import nano from "nano";
 
-// ✅ CouchDB-Verbindung mit deinen Zugangsdaten
-const couchDBUrl = "http://admin:passwort1234@127.0.0.1:5984"; // Deine CouchDB URL
+const couchDBUrl = "http://admin:passwort1234@127.0.0.1:5984";
 const couch = nano(couchDBUrl);
-
-// ✅ Definiere die Datenbanken
 const eventDB = couch.use("events");
 
-// Funktion zum Abrufen einer Datenbank (oder Erstellen, falls sie nicht existiert)
+// Datenbank abrufen oder erstellen
 async function getDatabase(dbName) {
   try {
     const dbs = await couch.db.list();
     if (!dbs.includes(dbName)) {
       await couch.db.create(dbName);
-      console.log(`✅ Datenbank "${dbName}" wurde erstellt.`);
+      console.log(`Datenbank "${dbName}" wurde erstellt.`);
     }
     return couch.use(dbName);
   } catch (err) {
-    console.error(`❌ Fehler beim Zugriff auf die Datenbank "${dbName}": ${err.message}`);
+    console.error(`Fehler beim Zugriff auf die Datenbank "${dbName}": ${err.message}`);
     throw err;
   }
 }
 
-// 🛠 Datenbanken erstellen (falls nicht vorhanden)
-async function initializeDatabases() {
+// Datenbank-Initialisierung
+export async function init() {
   try {
     const dbs = await couch.db.list();
     
     // Events Datenbank
     if (!dbs.includes("events")) {
       await couch.db.create("events");
-      console.log(`✅ Datenbank "events" wurde erstellt.`);
+      console.log("Events-Datenbank erstellt");
     }
     
     // Users Datenbank
     if (!dbs.includes("users")) {
       await couch.db.create("users");
-      console.log(`✅ Datenbank "users" wurde erstellt.`);
+      console.log("Users-Datenbank erstellt");
       
-      // Indizes für die users Datenbank erstellen (für email Suche)
       const usersDB = couch.use("users");
       await usersDB.createIndex({
         index: { fields: ["email"] },
         name: "email-index"
       });
-      console.log(`✅ Index für "users" Datenbank wurde erstellt.`);
+      console.log("Email-Index für Users erstellt");
+    }
+
+    // Bookings Datenbank
+    if (!dbs.includes("bookings")) {
+      await couch.db.create("bookings");
+      console.log("Bookings-Datenbank erstellt");
+      
+      const bookingsDB = couch.use("bookings");
+      await bookingsDB.createIndex({
+        index: { fields: ["user_id", "type"] },
+        name: "user-type-index"
+      });
+      console.log("User-Type-Index für Bookings erstellt");
     }
   } catch (err) {
-    console.error(`❌ Fehler beim Erstellen der Datenbanken: ${err.message}`);
+    console.error("Fehler bei Datenbank-Initialisierung:", err.message);
   }
 }
-
-// **Datenbank beim Start initialisieren**
-initializeDatabases();
 
 export { eventDB, getDatabase };

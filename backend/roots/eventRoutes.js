@@ -1,7 +1,7 @@
 // Pfad: my-app/backend/roots/eventRoutes.js
 
 import { getEvents, addEvent, bookEvent, getEventById } from "../core/eventStore.js";
-import { getBookingsByUser } from "../core/bookingStore.js";
+import { getBookingsByUser, addBooking } from "../core/bookingStore.js";
 import jwt from "jsonwebtoken";
 
 const checkAdminRole = async (request, reply, done) => {
@@ -53,7 +53,14 @@ export default async function eventRoutes(fastify, options) {
       }
 
       if (category && category.trim() !== "") {
-        events = events.filter((e) => e.type === category);
+        const searchCategory = category.trim();
+        console.log("Suche nach Kategorie:", searchCategory);
+        events = events.filter((e) => {
+          const eventType = e.type || "";
+          console.log(`Vergleiche Event "${e.title}" - Type: "${eventType}" mit Suche: "${searchCategory}"`);
+          return eventType === searchCategory;
+        });
+        console.log(`Gefundene Events für Kategorie ${searchCategory}:`, events.length);
       }
 
       return { events };
@@ -96,21 +103,34 @@ export default async function eventRoutes(fastify, options) {
 
   // Buchung eines Events
   fastify.post("/events/book", async (request, reply) => {
-    const { eventId } = request.body;
-    if (!eventId) {
-      return reply.status(400).send({ error: "Event ist ID erforderlich!" });
-    }
     try {
-      const result = await bookEvent(eventId);
-      if (result.success) {
-        reply.send({
-          message: "Buchung erfolgreich! Ihnen wurde eine Bestätigungsmail geschickt.",
-          updatedEvent: result.updatedEvent,
-        });
-      } else {
-        reply.status(400).send({ error: result.error });
+      const { eventId } = request.body;
+      if (!eventId) {
+        return reply.status(400).send({ error: "Event ID erforderlich!" });
       }
+
+      // User-Authentifizierung
+      const authHeader = request.headers.authorization;
+      if (!authHeader) {
+        return reply.status(401).send({ error: "Authentifizierung erforderlich" });
+      }
+
+      const token = authHeader.split(" ")[1];
+      const decoded = jwt.verify(token, "Geheim_Key_1234");
+      
+      if (!decoded.user || !decoded.user._id) {
+        return reply.status(401).send({ error: "Ungültige Benutzerdaten" });
+      }
+
+      // Buchung mit Benutzer-ID durchführen
+      const bookingResult = await addBooking(decoded.user._id, eventId);
+      
+      reply.send({
+        message: "Buchung erfolgreich!",
+        booking: bookingResult
+      });
     } catch (error) {
+      console.error("Buchungsfehler:", error);
       reply.status(500).send({ error: "Fehler beim Buchen des Events" });
     }
   });
@@ -123,15 +143,31 @@ export default async function eventRoutes(fastify, options) {
         return reply.status(401).send({ error: "Kein Token mitgesendet" });
       }
 
-      const token = authHeader.split(" ")[1];
-      const decoded = jwt.verify(token, "Geheim_Key_1234");
-      const userId = decoded.user._id;
+      let decoded;
+      try {
+        const token = authHeader.split(" ")[1];
+        decoded = jwt.verify(token, "Geheim_Key_1234");
+        console.log("👤 User data from token:", decoded.user);
+      } catch (jwtError) {
+        console.error("❌ JWT verification failed:", jwtError);
+        return reply.status(401).send({ error: "Token ungültig oder abgelaufen" });
+      }
 
-      const bookings = await getBookingsByUser(userId);
-      reply.send({ bookings });
+      if (!decoded.user || !decoded.user._id) {
+        console.error("❌ Invalid user data:", decoded);
+        return reply.status(401).send({ error: "Token enthält keine gültigen Benutzerdaten" });
+      }
+
+      const bookings = await getBookingsByUser(decoded.user._id);
+      console.log(`✅ Found ${bookings.length} bookings for user ${decoded.user._id}`);
+      
+      return reply.send({ bookings });
     } catch (error) {
-      console.error("Fehler beim Abrufen der Buchungen:", error);
-      reply.status(500).send({ error: "Fehler beim Abrufen der Buchungen" });
+      console.error("❌ Error in /bookings/me:", error);
+      return reply.status(500).send({ 
+        error: "Fehler beim Abrufen der Buchungen",
+        details: error.message 
+      });
     }
   });
 }
