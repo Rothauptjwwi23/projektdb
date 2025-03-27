@@ -19,7 +19,7 @@ export const addBooking = async (user_id, event_id, seats = 1) => {
 
   const eventResult = await bookEvent(event_id, seats);
   if (!eventResult.success) {
-    console.error("❌ Fehler beim Reduzieren der Plätze:", eventResult.error);
+    console.error("❌ Fehler beim Reduzieren  der Plätze:", eventResult.error);
     throw new Error(eventResult.error);
   }
 
